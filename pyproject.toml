@@ -28,9 +28,6 @@ dependencies = [
     "debugpy>=1.8.20",
 ]
 
-[tool.uv.sources]
-odin_control = { path = "../odin-control/", editable = true }
-
 [tool.setuptools.packages.find]
 where = ["src"]
 
