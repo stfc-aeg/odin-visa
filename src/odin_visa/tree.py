@@ -1,3 +1,4 @@
+from enum import Enum
 from inspect import isclass
 import logging
 from pprint import pformat
@@ -88,18 +89,32 @@ class ParameterTreeMixin:
     def as_tree(self) -> ParameterTree:
         branches = {}
 
-        # TODO: enum as string, autopopulate allowed values
+        # DONE: enum as string
+        # TODO:, autopopulate allowed values
         fields = [(getattr(type(self), attr), attr) for attr in dir(type(self))]
         for field in fields:
             if type(field[0]) == Leaf:
                 branches[field[1]] = (
                     (
-                        (lambda field=field: field[0].get(self))
+                        (
+                            (lambda field=field: field[0].get(self))
+                            if not issubclass(type(field[0].get(self)), Enum)
+                            else (lambda field=field: str(field[0].get(self)))
+                        )
                         if field[0].get is not None
                         else None
                     ),
                     (
-                        (lambda value, field=field: field[0].set(self, value))
+                        (
+                            (lambda value, field=field: field[0].set(self, value))
+                            if field[0].get is not None
+                            and not issubclass(type(field[0].get(self)), Enum)
+                            else (
+                                lambda value, field=field: field[0].set(
+                                    self, str(value)
+                                )
+                            )
+                        )
                         if field[0].set is not None
                         else None
                     ),
