@@ -1,47 +1,83 @@
+from concurrent.futures import ThreadPoolExecutor
 import logging
+import time
 from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
+import pandas as pd
+from tornado.concurrent import run_on_executor
 
 from odin_visa.devices.keithley2470.config.buffer import BufferConfig
+from odin_visa.devices.keithley2470.managers import ITEM_DTYPE
+from odin_visa.devices.keithley2470.managers.savefile_manager import SaveFileManager
 from odin_visa.types import parse_int
 
 if TYPE_CHECKING:
     from odin_visa.devices.keithley2470.k2470 import K2470Device
 
 
-ITEM_DTYPE = np.dtype([("seconds_offset", "f8"), ("source", "f8"), ("reading", "f8")])
-
-
 class BufferManager:
-    def __init__(self, device: "K2470Device", config: BufferConfig):
+
+    def __init__(
+        self,
+        device: "K2470Device",
+        config: BufferConfig,
+    ):
         self.reader = DeviceBufferReader(device, config)
+        self.savefile_manager = SaveFileManager(device.config.savefile)
+        self.executor = ThreadPoolExecutor(max_workers=1)
 
-        self.current_buffer = np.empty(0, dtype=ITEM_DTYPE)
-
+        self.dataframe_cache = None
         self.is_acquiring = False
+        self.acquisition_start_time = 0
 
     def start_acquisition(self):
-        self.current_buffer = np.empty(0, dtype=ITEM_DTYPE)
+        self.savefile_manager.create_dataset()
         self.is_acquiring = True
+        self.acquisition_start_time = time.time_ns() // 1_000  # time in microseconds
+        self.update_buffer()
 
     def stop_acquisition(self):
         self.is_acquiring = False
 
     # TODO: play/pause?
 
-    def get_buffer(self, start: int = 0, stride: int = 1) -> NDArray:
-        """Get the current buffer of data, from a given start index, with a given stride (for downsampling)"""
-        # get_buffer() is called with the 'downsampled local' start index
-        corrected_start = int(start * stride)
-        return self.current_buffer[corrected_start::stride]
+    def get_buffer(
+        self,
+        start: float | None = None,
+        end: float | None = None,
+        stride: float | None = 1.0,
+    ) -> list:
+        df = self.get_dataframe()
+        if df is None:
+            return []
 
-    def update(self):
-        if self.is_acquiring:
-            self.current_buffer = np.concat(
-                [self.current_buffer, self.reader.read_new_items()]
-            )
+        downsampled = df[start:end:stride]
+        arr = [
+            (idx, *row) for idx, row in zip(downsampled.index, downsampled.to_numpy())
+        ]
+        return arr
+
+    def get_dataframe(self):
+        if self.dataframe_cache is not None:
+            return self.dataframe_cache
+
+        buffer = self.savefile_manager.read()
+        if buffer is None:
+            return
+        return pd.DataFrame(data=buffer).set_index(["timestamp"])
+
+    def invalidate_dataframe(self):
+        self.dataframe_cache = None
+
+    @run_on_executor
+    def update_buffer(self):
+        while self.is_acquiring:
+            chunk = self.reader.read_new_items()
+            logging.warning(f"CHUNK: {chunk}")
+            self.savefile_manager.save_chunk(chunk)
+            time.sleep(1)
 
 
 class DeviceBufferReader:
@@ -111,5 +147,11 @@ class DeviceBufferReader:
 
         # parse to array of float64s, then treat each group of 3 as single ITEM_DTYPE
         items = np.fromstring(response, sep=",")
-        logging.debug(f"dtype: {ITEM_DTYPE}")
-        return items.view(ITEM_DTYPE)
+        items[::3] *= 1_000_000
+        rows = items.reshape(-1, 3)
+        out = np.empty(rows.shape[0], dtype=ITEM_DTYPE)
+        out["timestamp"] = rows[:, 0].astype(np.int64)
+        out["reading"] = rows[:, 1]
+        out["source"] = rows[:, 2]
+
+        return out

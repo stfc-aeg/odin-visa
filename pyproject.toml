@@ -26,6 +26,7 @@ dependencies = [
     "numpy>=2.2",
     "h5py==3.16.0",
     "debugpy>=1.8.20",
+    "pandas>=2.3.3",
 ]
 
 [tool.setuptools.packages.find]

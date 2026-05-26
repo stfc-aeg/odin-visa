@@ -23,6 +23,8 @@ logging.getLogger("gpib").setLevel(logging.ERROR)
 
 
 class VisaController(BaseController):
+    executor = ThreadPoolExecutor(max_workers=1)
+
     """ODIN controller that manages VISA instrument discovery and communication.
 
     Discovers connected instruments via pyvisa, identifies them by *IDN?,
@@ -35,8 +37,6 @@ class VisaController(BaseController):
     All SCPI commands across all devices are serialized through a shared
     threading.Lock to prevent interleaved VISA communication.
     """
-
-    executor = ThreadPoolExecutor(max_workers=1)
 
     def __init__(self, options: dict[str, str]):
         self.options = options

@@ -3,7 +3,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from odin_control.adapters.parameter_tree import ParameterTree
-from odin_visa.devices.keithley2470.managers import BufferManager
+from odin_visa.devices.keithley2470.managers.buffer_manager import BufferManager
 from odin_visa.tree import Leaf, ParameterTreeMixin
 
 if TYPE_CHECKING:
@@ -16,14 +16,13 @@ class Buffer(ParameterTreeMixin):
         self._stride = stride
         self.buffer = []
 
-    # TODO: I dont think the stride is doing anything...
     def update(self):
         pass
 
     def get_buffer(self):
-        return self._buffer_manager.get_buffer(stride=self._stride).tolist()
+        return self._buffer_manager.get_buffer(stride=self._stride)
 
-    buffer = Leaf(list[tuple[float, float, float]], get_buffer, None)
+    buffer = Leaf(list[tuple[int, float, float]], get_buffer, None)
 
 
 class Buffers(ParameterTreeMixin):

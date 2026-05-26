@@ -22,9 +22,12 @@ class LoopUntilTrigger(ParameterTreeMixin):
         self.delay = delay
 
     def _load(self):
-        self._device.write(
-            f':TRIG:LOAD "LoopUntilEvent", COMM, {self.post_trigger_reading_percentage}, {self.delay}, "{self._device.config.buffer.name}"'
-        )
+        self._device.write(f"""
+:TRIG:LOAD "Empty" ;
+:TRIG:BLOCK:MDIG 1, "{self._device.config.buffer.name}", 1 ;
+:TRIG:BLOCK:BRANCH:EVENT 2, COMM, 0 ;
+:TRIG:BLOCK:BRANCH:ALWAYS 3, 1
+        """)
 
     post_trigger_reading_percentage = Leaf(int, set=set_post_trigger_reading_percentage)
     delay = Leaf(int, set=set_delay)

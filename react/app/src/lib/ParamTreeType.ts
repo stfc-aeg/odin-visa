@@ -107,7 +107,7 @@ export interface Status extends ParamNode {
 }
 
 export type Buffers = Record<string, Buffer>;
-export type BufferItem = [offset: number, source: number, sense: number];
+export type BufferItem = [timestamp: number, source: number, sense: number];
 
 export interface Buffer extends ParamNode {
   buffer: BufferItem[];
