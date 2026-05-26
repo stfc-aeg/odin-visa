@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
+import threading
 import time
 from typing import TYPE_CHECKING
 
@@ -27,6 +28,8 @@ class BufferManager:
         self.reader = DeviceBufferReader(device, config)
         self.savefile_manager = SaveFileManager(device.config.savefile)
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self._stop_event = threading.Event()
+        self._update_future = None
 
         self.dataframe_cache = None
         self.is_acquiring = False
@@ -34,12 +37,18 @@ class BufferManager:
 
     def start_acquisition(self):
         self.savefile_manager.create_dataset()
+        self._stop_event.clear()
         self.is_acquiring = True
         self.acquisition_start_time = time.time_ns() // 1_000  # time in microseconds
-        self.update_buffer()
+        self._update_future = self.update_buffer()
 
     def stop_acquisition(self):
         self.is_acquiring = False
+        self._stop_event.set()
+
+    def cleanup(self):
+        self.stop_acquisition()
+        self.executor.shutdown(wait=False, cancel_futures=True)
 
     # TODO: play/pause?
 
@@ -73,11 +82,18 @@ class BufferManager:
 
     @run_on_executor
     def update_buffer(self):
-        while self.is_acquiring:
-            chunk = self.reader.read_new_items()
-            logging.warning(f"CHUNK: {chunk}")
-            self.savefile_manager.save_chunk(chunk)
-            time.sleep(1)
+        while self.is_acquiring and not self._stop_event.is_set():
+            try:
+                chunk = self.reader.read_new_items()
+                if self._stop_event.is_set():
+                    break
+                logging.warning(f"CHUNK: {chunk}")
+                self.savefile_manager.save_chunk(chunk)
+            except Exception:
+                if self._stop_event.is_set():
+                    break
+                logging.exception("Error updating device buffer")
+            self._stop_event.wait(1)
 
 
 class DeviceBufferReader:

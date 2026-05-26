@@ -26,16 +26,15 @@ class K2470Device(Device):
         self.lock: Lock = lock
         self._device = resource
         self._config = config
-
-        self.write("*RST")
-
         self.event_log = EventLog()
-        self.config = Config(self)
-        self.acquisition = Acquisitions(self, self.config)
-
         self.type = DeviceType.K2470
         self.ident = ident
         self.address = resource.resource_name
+
+        self.write("*RST")
+
+        self.config = Config(self)
+        self.acquisition = Acquisitions(self, self.config)
 
     def update(self):
         match self.acquisition.status.state:
@@ -46,6 +45,17 @@ class K2470Device(Device):
 
         self.config.update(running)
         self.acquisition.update()
+
+    def cleanup(self):
+        self.device_control_enable = False
+        try:
+            self.acquisition.cleanup()
+        except Exception:
+            logging.exception("Error cleaning up acquisition for %s", self.address)
+        try:
+            self._device.close()
+        except Exception:
+            logging.exception("Error closing VISA resource %s", self.address)
 
     def query(
         self,
@@ -74,6 +84,9 @@ class K2470Device(Device):
                     logging.debug(f"Response `{ret}` ({end - start:.3f} seconds)")
                     return ret
                 except Exception as e:
+                    if not self.device_control_enable:
+                        logging.debug("Query `%s` failed during shutdown: %s", cmd, e)
+                        return None
                     logging.error(
                         f"Error commincating to device: {e}. Querying error log"
                     )
@@ -97,6 +110,9 @@ class K2470Device(Device):
                     end = default_timer()
                     logging.debug(f"Response ({end - start:.3f} seconds)")
                 except Exception as e:
+                    if not self.device_control_enable:
+                        logging.debug("Write `%s` failed during shutdown: %s", cmd, e)
+                        return
                     logging.error(
                         f"Error commincating to device: {e}. Querying error log"
                     )
@@ -105,11 +121,16 @@ class K2470Device(Device):
     def check_error(
         self, suppress_error: Optional[List[int]] = None, during_command: str = ""
     ):
-        while True:
+        if not self.device_control_enable:
+            return
+
+        max_error_reads = 32
+        for _ in range(max_error_reads):
             try:
                 error_string = self._device.query(":SYST:ERR?").strip()
                 error_code = int(error_string.split(",")[0])
                 if suppress_error and error_code in suppress_error:
+                    logging.debug("Suppressed device error: %s", error_string)
                     continue
             except Exception as e:
                 logging.error(
@@ -123,7 +144,16 @@ class K2470Device(Device):
                 self.event_log.push_event(error_string, during_command)
             else:
                 break
-        self._device.write("*CLS")
+        else:
+            logging.error("Stopped reading error log after %d entries", max_error_reads)
+
+        if not self.device_control_enable:
+            return
+
+        try:
+            self._device.write("*CLS")
+        except Exception as e:
+            logging.error(f"Could not clear the error log ({e})")
 
     acquisition = SubTree(Acquisitions)
     config = SubTree(Config)

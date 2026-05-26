@@ -73,6 +73,10 @@ class Acquisitions(ParameterTreeMixin):
         self.status.update()
         self.buffers.update()
 
+    def cleanup(self):
+        self.paused = True
+        self._buffer_manager.cleanup()
+
     type = Leaf(AcquisitionType, set=set_type)
     output = Leaf(bool, set=set_output)
     start = Leaf(NoneType, set=do_start)

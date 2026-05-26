@@ -16,3 +16,7 @@ class Device(ParameterTreeMixin, ABC):
     @abstractmethod
     def update(self) -> None:
         pass
+
+    @abstractmethod
+    def cleanup(self) -> None:
+        pass

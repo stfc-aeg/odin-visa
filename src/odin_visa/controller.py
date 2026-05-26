@@ -4,7 +4,6 @@ import threading
 import logging
 from typing import Any
 import pyvisa
-import time
 
 from pyvisa.resources import MessageBasedResource
 from tornado.concurrent import run_on_executor
@@ -23,8 +22,6 @@ logging.getLogger("gpib").setLevel(logging.ERROR)
 
 
 class VisaController(BaseController):
-    executor = ThreadPoolExecutor(max_workers=1)
-
     """ODIN controller that manages VISA instrument discovery and communication.
 
     Discovers connected instruments via pyvisa, identifies them by *IDN?,
@@ -40,19 +37,23 @@ class VisaController(BaseController):
 
     def __init__(self, options: dict[str, str]):
         self.options = options
+        self.executor = ThreadPoolExecutor(max_workers=1)
+        self._stop_event = threading.Event()
+        self._background_future = None
 
         devices_config_path = self.options["devices_config"]
         with open(devices_config_path, "rb") as f:
             devices_config = json.load(f)
         self.devices_config: DevicesConfig = devices_config
+        self.visa_timeout_ms = int(self.options.get("visa_timeout_ms", 2000))
 
         # Ensure a single SCPI command is sent at a time across all devices
         self.lock: threading.Lock = threading.Lock()
 
-        self.background_task_enable: bool = True
         self.devices: dict[str, Device] = {}
 
         self.poll_interval = 1.0
+        self.resource_manager = pyvisa.ResourceManager()
 
         self.param_tree: ParameterTree = self.initialise_devices()
 
@@ -74,13 +75,13 @@ class VisaController(BaseController):
         Returns:
             A ParameterTree containing the device count and all device subtrees.
         """
-        resources = pyvisa.ResourceManager()
-
         for device in self.devices_config["devices"]:
             address = device["address"]
             try:
                 logging.debug(f"Opening {address}")
-                resource = resources.open_resource(address)
+                resource = self.resource_manager.open_resource(
+                    address, open_timeout=self.visa_timeout_ms
+                )
             except Exception as e:
                 logging.warning(f"Could not open device: {address} ({e})")
                 continue
@@ -91,6 +92,7 @@ class VisaController(BaseController):
                     f"{address} is not a MessageBasedResource, and is therefore unsupported"
                 )
                 continue
+            resource.timeout = self.visa_timeout_ms
 
             try:
                 logging.debug(f"Trying to indentify {address}")
@@ -129,21 +131,36 @@ class VisaController(BaseController):
 
     def cleanup(self):
         self.stop_background_task()
+        for name, device in self.devices.items():
+            try:
+                device.cleanup()
+            except Exception:
+                logging.exception("Error cleaning up device %s", name)
+        self.executor.shutdown(wait=False, cancel_futures=True)
+        try:
+            self.resource_manager.close()
+        except Exception:
+            logging.exception("Error closing VISA resource manager")
 
     def initialize(self, adapters):
         pass
 
     def start_background_task(self):
-        self.background_task_enable = True
-        self.background_task()
+        self._stop_event.clear()
+        self._background_future = self.background_task()
 
     def stop_background_task(self):
-        self.background_task_enable = False
+        self._stop_event.set()
 
     @run_on_executor
     def background_task(self):
         logging.info("Background task running")
-        while self.background_task_enable:
-            time.sleep(self.poll_interval)
-            for device in self.devices.values():
-                device.update()
+        while not self._stop_event.wait(self.poll_interval):
+            for name, device in self.devices.items():
+                if self._stop_event.is_set():
+                    break
+                try:
+                    device.update()
+                except Exception:
+                    logging.exception("Error updating device %s", name)
+        logging.info("Background task stopped")
