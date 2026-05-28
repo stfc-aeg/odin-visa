@@ -17,31 +17,25 @@ export const Keithley2470 = ({ bundle }: Keithley2470Props) => {
   }, [setError, errorCount, eventLog]);
 
   return (
-    <div className="d-flex flex-column-reverse flex-xl-row flex-xl-grow-1 overflow-hidden p-2 gap-4">
-      <div className="d-flex flex-column col-xl-4 gap-4 overflow-y-auto overflow-x-hidden pe-2" style={{ minHeight: 0 }}>
-        <h3 className="text-muted text-uppercase fs-4 fw-bold mb-2">Device Config</h3>
-        <div className="container">
-          <div className="row row-cols-2 row-cols-xl-1">
-            <SourceSettingsGroup bundle={bundle} />
+    <div className="container-fluid p-2 d-flex flex-column">
+      <div className="row">
+        <div className="col-lg-3 col">
+          <div className="container-fluid p-3">
+            <h3 className="text-muted text-uppercase fs-4 fw-bold mb-2">
+              Device Config
+            </h3>
+            <div className="row">
+              <SourceSettingsGroup bundle={bundle} />
+            </div>
           </div>
         </div>
-        {/*
-        <GeneralSettingsGroup bundle={bundle} />
-        <MeasurementSettingsGroup bundle={bundle} />
-        <BufferSettingsGroup bundle={bundle} />
-        */}
+        <div className="col-auto d-none d-xl-flex px-2">
+          <div className="vr" />
+        </div>
+        <div className="col">
+          <AcquisitionsGroup bundle={bundle} />
+        </div>
       </div>
-      <div className="flex-grow-1 overflow-hidden">
-        <AcquisitionsGroup bundle={bundle} />
-      </div>
-      {/*<div className="flex-grow-1 overflow-hidden">
-        <BufferGraph
-          title={device.trigger.buffer_name}
-          data={device.trigger.buffer}
-          currentModel={device.trigger.current_model}
-        />
-      </div>
-      */}
     </div>
   );
 }

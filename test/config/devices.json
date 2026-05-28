@@ -6,14 +6,16 @@
       "address": "TCPIP::192.168.0.142::INSTR",
       "buffers": [
         {
+          "name": "full",
+          "stride": 1
+        },
+        {
           "name": "half",
-          "stride": 2,
-          "duration": 5
+          "stride": 2
         },
         {
           "name": "quart",
-          "stride": 4,
-          "duration": 20
+          "stride": 4
         }
       ]
     }

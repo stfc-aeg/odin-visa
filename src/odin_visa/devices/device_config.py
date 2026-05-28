@@ -6,7 +6,6 @@ from odin_visa.types import StrEnum
 class DownsampledBufferConfig(TypedDict):
     name: str
     stride: int
-    duration: float
 
 
 class DeviceType(StrEnum):
