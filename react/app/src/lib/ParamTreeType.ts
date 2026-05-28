@@ -111,4 +111,5 @@ export type BufferItem = [timestamp: number, source: number, sense: number];
 
 export interface Buffer extends ParamNode {
   buffer: BufferItem[];
+  start_from: number,
 }

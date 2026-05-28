@@ -6,16 +6,32 @@
       "address": "TCPIP::192.168.0.142::INSTR",
       "buffers": [
         {
-          "name": "full",
-          "stride": 1
+          "name": "full"
         },
         {
-          "name": "half",
-          "stride": 2
+          "name": "mean_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "mean"
         },
         {
-          "name": "quart",
-          "stride": 4
+          "name": "median_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "median"
+        },
+        {
+          "name": "min_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "min"
+        },
+        {
+          "name": "max_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "max"
+        },
+        {
+          "name": "first_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "first"
         }
       ]
     }

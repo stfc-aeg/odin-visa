@@ -11,17 +11,32 @@ if TYPE_CHECKING:
 
 
 class Buffer(ParameterTreeMixin):
-    def __init__(self, buffer_manager: BufferManager, stride: int):
+    def __init__(
+        self,
+        buffer_manager: BufferManager,
+        bin_size: str | None,
+        resample_method: str | None,
+    ):
         self._buffer_manager = buffer_manager
-        self._stride = stride
+        self._bin_size = bin_size
+        self._resample_method = resample_method
         self.buffer = []
+        self.start_from = 0
 
     def update(self):
         pass
 
     def get_buffer(self):
-        return self._buffer_manager.get_buffer(stride=self._stride)
+        return self._buffer_manager.get_buffer(
+            start=self.start_from,
+            resample_method=self._resample_method,
+            bin_size=self._bin_size,
+        )
 
+    def set_start_from(self, start_from: int):
+        self.start_from = start_from
+
+    start_from = Leaf(int, set=set_start_from)
     buffer = Leaf(list[tuple[int, float, float]], get_buffer, None)
 
 
@@ -34,7 +49,8 @@ class Buffers(ParameterTreeMixin):
         for buffer_config in self._device._config["buffers"]:
             self.buffers[buffer_config["name"]] = Buffer(
                 buffer_manager,
-                buffer_config["stride"],
+                buffer_config.get("resample_bin_size"),
+                buffer_config.get("resample_method"),
             )
 
     def as_tree(self) -> ParameterTree:

@@ -5,7 +5,8 @@ from odin_visa.types import StrEnum
 
 class DownsampledBufferConfig(TypedDict):
     name: str
-    stride: int
+    resample_bin_size: str | None
+    resample_method: str | None
 
 
 class DeviceType(StrEnum):

@@ -70,7 +70,7 @@ export const BufferGraph = ({ bundle }: Keithley2470Props) => {
         <div className="col">
           <Form.Range min={0} max={600} value={range} onChange={(event) => setRange(event.target.valueAsNumber)} />
         </div>
-        <div className="col-2">
+        <div className="col-auto">
           <Dropdown>
             <Dropdown.Toggle className="w-100">
               {selectedBuffer}

@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from odin_visa.devices.keithley2470.k2470 import K2470Device
 
 
+def us(td: int | None) -> pd.Timedelta | None:
+    if td is None:
+        return None
+    return pd.to_timedelta(td, unit="us")
+
+
 class BufferManager:
 
     def __init__(
@@ -54,17 +60,34 @@ class BufferManager:
 
     def get_buffer(
         self,
-        start: float | None = None,
-        end: float | None = None,
-        stride: float | None = 1.0,
+        start: int | None = None,
+        end: int | None = None,
+        bin_size: str | None = None,
+        resample_method: str | None = None,
     ) -> list:
         df = self.get_dataframe()
         if df is None:
             return []
 
-        downsampled = df[start:end:stride]
+        if bin_size is not None:
+            df = df.resample(bin_size)
+        match resample_method:
+            case "mean":
+                df = df.mean()
+            case "median":
+                df = df.median()
+            case "min":
+                df = df.min()
+            case "max":
+                df = df.max()
+            case "first":
+                df = df.first()
+
+        df = df.loc[us(start) : us(end)]
+
         arr = [
-            (idx, *row) for idx, row in zip(downsampled.index, downsampled.to_numpy())
+            (int(idx.value / 1000), src, rdg)
+            for idx, src, rdg in df.itertuples(index=True, name=None)
         ]
         return arr
 
@@ -75,7 +98,9 @@ class BufferManager:
         buffer = self.savefile_manager.read()
         if buffer is None:
             return
-        return pd.DataFrame(data=buffer).set_index(["timestamp"])
+        return pd.DataFrame(data=buffer, columns=["source", "reading"]).set_index(
+            pd.to_timedelta(buffer["timestamp"], unit="us")
+        )
 
     def invalidate_dataframe(self):
         self.dataframe_cache = None

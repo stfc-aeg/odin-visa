@@ -100,7 +100,7 @@ class Sense(ParameterTreeMixin):
         self._device = device
 
         self.set_function(SenseFunction.CURRENT)
-        self.set_nplcs(1.0)
+        self.set_nplcs(0.01)
         self.set_range(0.1)
         self.set_auto_range(False)
         self.set_count(1)
