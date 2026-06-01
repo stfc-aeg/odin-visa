@@ -15,15 +15,15 @@ const statusColorMap: Record<StatusType, TextColors> = {
   ABORTED: "text-danger",
 };
 
-export const AcquisitionStatus = ({ bundle }: Keithley2470Props) => {
+export const AcquisitionStatus = ({ control_endpoint }: Keithley2470Props) => {
   return (
     <div className="d-flex gap-2">
       <h3 className="text-muted text-uppercase fs-4 fw-bold mb-2">Status:</h3>
       <h3 className={`
         text-uppercase fs-4 fw-bold mb-2 
-        ${statusColorMap[bundle.device.acquisition.status.state]}
+        ${statusColorMap[control_endpoint.data.acquisitions.status.state]}
       `}>
-        {bundle.device.acquisition.status.state}
+        {control_endpoint.data.acquisitions.status.state}
       </h3>
     </div>
   )

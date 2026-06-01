@@ -1,12 +1,13 @@
-import type { Device, K2470 } from "@/lib/ParamTreeType";
-import type { AdapterEndpoint } from "@dssg/odin-react";
+import type { Buffers, Control } from "@/lib/ParamTreeType";
+import type { AdapterEndpoint, ParamTree } from "@dssg/odin-react";
 
-export interface DeviceBundle<T extends Device> {
-  endpoint: AdapterEndpoint,
-  device: T,
-  path: string,
+type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
+
+export const hasData = <T extends Record<string, ParamTree>>(endpoint: AdapterEndpoint<T>): endpoint is WithRequired<AdapterEndpoint<T>, "data"> => {
+  return endpoint.data !== undefined;
 }
 
 export interface Keithley2470Props {
-  bundle: DeviceBundle<K2470>
+  control_endpoint: WithRequired<AdapterEndpoint<Control>, "data">
+  buffers_endpoint?: WithRequired<AdapterEndpoint<Buffers>, "data">
 }

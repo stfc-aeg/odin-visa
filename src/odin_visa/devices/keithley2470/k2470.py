@@ -8,10 +8,34 @@ from pyvisa.resources import MessageBasedResource
 from odin_visa.devices.device import Device
 from odin_visa.devices.device_config import DeviceConfig, DeviceType
 from odin_visa.devices.keithley2470.acquisitions.acquisitions import Acquisitions
+from odin_visa.devices.keithley2470.acquisitions.buffers import Buffers
 from odin_visa.devices.keithley2470.acquisitions.status import TriggerModelState
 from odin_visa.devices.keithley2470.config import Config
 from odin_visa.devices.keithley2470.event_log import EventLog
-from odin_visa.tree import Leaf, SubTree
+from odin_visa.devices.keithley2470.managers.buffer_manager import BufferManager
+from odin_visa.tree import Leaf, ParameterTreeMixin, SubTree
+
+
+class Control(ParameterTreeMixin):
+    def __init__(
+        self,
+        device: "K2470Device",
+        ident: str,
+        address: str,
+    ):
+        self.event_log = EventLog()
+        self.ident = ident
+        self.address = address
+        self.type = DeviceType.K2470
+        self.config = Config(device)
+        self.acquisitions = Acquisitions(device, self.config)
+
+    event_log = SubTree(EventLog)
+    ident = Leaf(str)
+    address = Leaf(str)
+    type = Leaf(DeviceType)
+    acquisitions = SubTree(Acquisitions)
+    config = SubTree(Config)
 
 
 class K2470Device(Device):
@@ -26,36 +50,37 @@ class K2470Device(Device):
         self.lock: Lock = lock
         self._device = resource
         self._config = config
-        self.event_log = EventLog()
-        self.type = DeviceType.K2470
-        self.ident = ident
-        self.address = resource.resource_name
 
         self.write("*RST")
 
-        self.config = Config(self)
-        self.acquisition = Acquisitions(self, self.config)
+        self.control = Control(self, ident, resource._resource_name)
+        self._buffer_manager = BufferManager(self, self.control.config.buffer)
+        self.buffers = Buffers(self, self._buffer_manager)
 
     def update(self):
-        match self.acquisition.status.state:
+        match self.control.acquisitions.status.state:
             case TriggerModelState.RUNNING | TriggerModelState.WAITING:
                 running = True
             case _:
                 running = False
 
-        self.config.update(running)
-        self.acquisition.update()
+        self.control.config.update(running)
+        self.control.acquisitions.update()
+        self.buffers.update()
 
     def cleanup(self):
         self.device_control_enable = False
         try:
-            self.acquisition.cleanup()
+            self.control.acquisitions.cleanup()
+            self._buffer_manager.cleanup()
         except Exception:
-            logging.exception("Error cleaning up acquisition for %s", self.address)
+            logging.exception(
+                "Error cleaning up acquisitions for %s", self.control.address
+            )
         try:
             self._device.close()
         except Exception:
-            logging.exception("Error closing VISA resource %s", self.address)
+            logging.exception("Error closing VISA resource %s", self.control.address)
 
     def query(
         self,
@@ -141,7 +166,7 @@ class K2470Device(Device):
 
             if error_string != '0,"No error;0;0 0"':
                 logging.error(f"Error log contains: {error_string}")
-                self.event_log.push_event(error_string, during_command)
+                self.control.event_log.push_event(error_string, during_command)
             else:
                 break
         else:
@@ -155,9 +180,5 @@ class K2470Device(Device):
         except Exception as e:
             logging.error(f"Could not clear the error log ({e})")
 
-    acquisition = SubTree(Acquisitions)
-    config = SubTree(Config)
-    event_log = SubTree(EventLog)
-    ident = Leaf(str)
-    address = Leaf(str)
-    type = Leaf(DeviceType)
+    buffers = SubTree(Buffers)
+    control = SubTree(Control)

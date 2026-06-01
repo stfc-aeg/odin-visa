@@ -25,14 +25,13 @@ def us(td: int | None) -> pd.Timedelta | None:
 
 
 class BufferManager:
-
     def __init__(
         self,
         device: "K2470Device",
         config: BufferConfig,
     ):
         self.reader = DeviceBufferReader(device, config)
-        self.savefile_manager = SaveFileManager(device.config.savefile)
+        self.savefile_manager = SaveFileManager(device)
         self.executor = ThreadPoolExecutor(max_workers=1)
         self._stop_event = threading.Event()
         self._update_future = None
@@ -83,7 +82,7 @@ class BufferManager:
             case "first":
                 df = df.first()
 
-        df = df.loc[us(start) : us(end)]
+        df = df.fillna(0).loc[us(start) : us(end)]
 
         arr = [
             (int(idx.value / 1000), src, rdg)

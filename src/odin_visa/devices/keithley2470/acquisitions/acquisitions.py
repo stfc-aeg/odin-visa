@@ -17,12 +17,10 @@ if TYPE_CHECKING:
 class Acquisitions(ParameterTreeMixin):
     def __init__(self, device: "K2470Device", config: Config):
         self._device = device
-
-        self._buffer_manager = BufferManager(device, config.buffer)
+        self._config = config
 
         self.type = AcquisitionType.LOOP_UNTIL_TRIGGER
         self.status = Status(device)
-        self.buffers = Buffers(device, self._buffer_manager)
         self.set_output(False)
         self.paused = True
 
@@ -31,11 +29,11 @@ class Acquisitions(ParameterTreeMixin):
 
         match self.type:
             case AcquisitionType.LOOP_UNTIL_TRIGGER:
-                self._device.config.mode.loop_until_trigger._load()
+                self._config.mode.loop_until_trigger._load()
 
         self._device.write("INIT")
 
-        self._buffer_manager.start_acquisition()
+        self._device._buffer_manager.start_acquisition()
 
     def do_stop(self, _):
         self.paused = True
@@ -44,7 +42,7 @@ class Acquisitions(ParameterTreeMixin):
             case AcquisitionType.LOOP_UNTIL_TRIGGER:
                 self._device.write("*TRG")
 
-        self._buffer_manager.stop_acquisition()
+        self._device._buffer_manager.stop_acquisition()
 
     def set_output(self, output: bool):
         self._device.write(f":OUTP {int(output)}")
@@ -71,11 +69,9 @@ class Acquisitions(ParameterTreeMixin):
     def update(self):
         self.output = self._get_output()
         self.status.update()
-        self.buffers.update()
 
     def cleanup(self):
         self.paused = True
-        self._buffer_manager.cleanup()
 
     type = Leaf(AcquisitionType, set=set_type)
     output = Leaf(bool, set=set_output)
@@ -83,4 +79,3 @@ class Acquisitions(ParameterTreeMixin):
     stop = Leaf(NoneType, set=do_stop)
     paused = Leaf(bool, set=set_paused)
     status = SubTree(Status)
-    buffers = SubTree(Buffers)

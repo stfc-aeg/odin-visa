@@ -7,13 +7,18 @@ export interface OdinVisaParamTree extends ParamNode {
 }
 
 export interface K2470 extends ParamNode {
+  control: Control,
+  buffers: Buffers,
+}
+
+export interface Control extends ParamNode {
   type: "K2470";
   ident: string;
   address: string;
 
   event_log: EventLog;
   config: Config;
-  acquisition: Acquisition;
+  acquisitions: Acquisitions;
 }
 
 export interface DeviceTypeMap {
@@ -88,14 +93,13 @@ export interface SourceConfig extends ParamNode {
   limit: number;
 }
 
-export interface Acquisition extends ParamNode {
+export interface Acquisitions extends ParamNode {
   type: string;
   status: Status;
   output: boolean;
   start: null;
   stop: null;
   paused: boolean;
-  buffers: Buffers;
 }
 
 export type StatusType = "IDLE" | "RUNNING" | "WAITING" | "PAUSED" | "EMPTY" | "BUILDING" | "FAILED" | "ABORTING" | "ABORTED";

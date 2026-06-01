@@ -1,11 +1,11 @@
 import type { Keithley2470Props } from "@/lib/types";
 import { AcquisitionStatus } from "./AcquisitionStatus";
 import { BufferGraph } from "./BufferGraph";
-import { EndpointButton } from "@/lib/componentWithBundle";
+import { EndpointButton } from "@dssg/odin-react";
 
-export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
-  const output = bundle.device.acquisition.output;
-  const state = bundle.device.acquisition.status.state;
+export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Keithley2470Props) => {
+  const output = control_endpoint.data.acquisitions.output;
+  const state = control_endpoint.data.acquisitions.status.state;
   const running = state == "RUNNING" || state == "WAITING";
 
   return (
@@ -15,7 +15,7 @@ export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
           <h3 className="text-muted text-uppercase fs-4 fw-bold mb-2">Acquisition</h3>
         </div>
         <div className="col d-flex justify-content-end">
-          <AcquisitionStatus bundle={bundle} />
+          <AcquisitionStatus control_endpoint={control_endpoint} />
         </div>
       </div>
       <div className="row">
@@ -23,8 +23,8 @@ export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
           <EndpointButton
             className={output ? "bg-primary" : "bg-secondary"}
             value={!output}
-            bundle={bundle}
-            path="acquisition/output"
+            endpoint={control_endpoint}
+            fullpath="acquisitions/output"
           >
             Output {output ? "On" : "Off"}
           </EndpointButton>
@@ -35,8 +35,8 @@ export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
         <div className="col-auto">
           <EndpointButton
             className={`bg-success border-success ${running ? "disabled" : ""}`}
-            bundle={bundle}
-            path="acquisition/start"
+            endpoint={control_endpoint}
+            fullpath="acquisitions/start"
           >
             Start
           </EndpointButton>
@@ -44,8 +44,8 @@ export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
         <div className="col-auto">
           <EndpointButton
             className={`bg-danger border-danger ${!running ? "disabled" : ""}`}
-            bundle={bundle}
-            path="acquisition/stop"
+            endpoint={control_endpoint}
+            fullpath="acquisitions/stop"
           >
             Stop
           </EndpointButton>
@@ -55,7 +55,7 @@ export const AcquisitionsGroup = ({ bundle }: Keithley2470Props) => {
         <div className="border w-100" />
       </div>
       <div className="row">
-        <BufferGraph bundle={bundle} />
+        <BufferGraph buffers_endpoint={buffers_endpoint} control_endpoint={control_endpoint} />
       </div>
     </div>
   );
