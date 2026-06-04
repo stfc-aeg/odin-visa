@@ -24,9 +24,6 @@ class Buffer(ParameterTreeMixin):
         self.buffer = []
         self.start_from = 0
 
-    def update(self):
-        pass
-
     def get_buffer(self):
         logging.info("start_from: {self.start_from}")
         return self._buffer_manager.get_buffer(
@@ -34,8 +31,6 @@ class Buffer(ParameterTreeMixin):
             resample_method=self._resample_method,
             bin_size=self._bin_size,
         )
-
-    buffer = Leaf(list[tuple[int, float, float]], get_buffer, None)
 
 
 class Buffers(ParameterTreeMixin):
@@ -60,13 +55,9 @@ class Buffers(ParameterTreeMixin):
 
     def as_tree(self) -> ParameterTree:
         buffers = ParameterTree(
-            {name: buffer.as_tree() for name, buffer in self.buffers.items()}
+            {name: (buffer.get_buffer, None) for name, buffer in self.buffers.items()}
         )
         start_from = ParameterTree(
             {"timestamp": (lambda: self.start_from, self.set_start_from)}
         )
         return ParameterTree({"buffers": buffers, "start_from": start_from})
-
-    def update(self):
-        for _, buffer in self.buffers.items():
-            buffer.update()

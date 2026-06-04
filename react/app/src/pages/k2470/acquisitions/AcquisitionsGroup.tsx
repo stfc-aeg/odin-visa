@@ -5,7 +5,7 @@ import { EndpointButton, EndpointInput } from "@dssg/odin-react";
 import { useState } from "react";
 import { Dropdown } from "react-bootstrap";
 import { useQuery } from "@tanstack/react-query";
-import type { Buffer, BufferItem } from "@/lib/ParamTreeType";
+import type { BufferItem } from "@/lib/ParamTreeType";
 
 export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: ControlEndpointProp & BuffersEndpointProp) => {
   const output = control_endpoint.data.acquisitions.output;
@@ -15,7 +15,7 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
 
   const [lastTimestamp, setLastTimestamp] = useState(0);
   const [selectedBufferName, setSelectedBufferName] = useState(Object.keys(buffers).at(0) ?? "");
-  const [bufferData, setBufferData] = useState<BufferItem[]>([]);
+  const [bufferData, setBufferData] = useState<Record<string, BufferItem[]>>({});
   const { data, isLoading, isError } = useQuery({
     queryKey: ["bufferData"],
     queryFn: async () => {
@@ -25,25 +25,34 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
         // only show buffer elements added since the last fetch
         await buffers_endpoint.put({ timestamp: lastTimestamp + 1 }, "start_from");
         // get the new data for the current buffer
-        const new_data = await buffers_endpoint.get<Buffer>(`buffers`);
-        // only update the timestamp and data if new data has been fetched
-        if (new_data && new_data.buffer.length != 0) {
-          // set the timestamp to the most recent measurement
-          setLastTimestamp(new_data.buffer.at(-1)![0])
-          // append the new data to the stored data
-          setBufferData([...bufferData, ...new_data.buffer])
-        }
+        const new_data = await buffers_endpoint.get<Record<string, BufferItem[]>>(`buffers`);
+
+        // get the timestamp of the last element in each buffer, and find the most recent
+        const lastElementTimestamp = Math.max(...Object.values(new_data)
+          .filter((buffer) => buffer.length != 0) // filter buffers that haven't been updated
+          .map((buffer) => buffer.at(-1)![0]) // get the timestamp from the buffer
+        );
+        if (lastElementTimestamp) setLastTimestamp(lastElementTimestamp);
+
+        // update all the buffers in the useState
+        setBufferData((current) => {
+          // create a copy of the buffers, required for react to detect state change
+          const copy = { ...current };
+          for (const key in new_data) {
+            // set the buffer to the old data + new data
+            copy[key] = [...(copy[key] ?? []), ...new_data[key]];
+          }
+          return copy;
+        })
       }
       // return the full data state (as required by tanstack query)
       return bufferData;
     },
-    refetchInterval: 250,
-    staleTime: 250,
+    refetchInterval: 1000,
+    staleTime: 1000,
   })
 
   if (isLoading || isError || !data) return <h1>Loading Graph</h1>;
-
-  console.log(data)
 
   return (
     <div className="container-fluid p-3">
@@ -75,7 +84,7 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
             endpoint={control_endpoint}
             fullpath="acquisitions/start"
             post_method={() => {
-              setBufferData([]);
+              setBufferData({});
               setLastTimestamp(0);
             }}
           >
@@ -103,8 +112,6 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
               {Object.keys(buffers).map((name) =>
                 <Dropdown.Item key={name} onClick={() => {
                   setSelectedBufferName(name);
-                  setBufferData([])
-                  setLastTimestamp(0);
                 }}>{name}</Dropdown.Item>
               )}
             </Dropdown.Menu>
@@ -115,7 +122,7 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
         <div className="border w-100" />
       </div>
       <div className="row">
-        <BufferGraph data={data} />
+        <BufferGraph data={data[selectedBufferName]} />
       </div>
     </div>
   );

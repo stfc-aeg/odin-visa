@@ -84,7 +84,7 @@ class BufferManager:
             case "first":
                 df = df.first()
 
-        df = df.fillna(0).loc[us(start) : us(end)]
+        df = df.ffill().loc[us(start) : us(end)]
 
         arr = [
             (int(idx.value / 1000), src, rdg)
@@ -143,6 +143,7 @@ class DeviceBufferReader:
             return np.empty(0, dtype=ITEM_DTYPE)
 
         count, end = map(parse_int, response.split(";"))
+        end = end % size
 
         # no new items have been added
         if self.prev_end == end:

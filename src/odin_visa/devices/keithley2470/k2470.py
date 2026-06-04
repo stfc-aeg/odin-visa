@@ -66,7 +66,6 @@ class K2470Device(Device):
 
         self.control.config.update(running)
         self.control.acquisitions.update()
-        self.buffers.update()
 
     def cleanup(self):
         self.device_control_enable = False

@@ -35,6 +35,7 @@ const evenlySpaced = (arr, count = 6) => {
 export const BufferGraph = ({ data }: { data: BufferItem[] }) => {
   const [range, setRange] = useState(10);
 
+  if (!data) return <h1>Loading</h1>;
 
   // const { data, isLoading, isError, fetchNextPage } = useBuffersQuery(bundle, "full");
   // const [bufferData, setBufferData] = useState([]);
