@@ -47,4 +47,3 @@ class BufferConfig(ParameterTreeMixin):
 
     name = Leaf(str, get_name, set_name)
     size = Leaf(int, get_size, set_size)
-    clear = Leaf(NoneType, None, _clear)

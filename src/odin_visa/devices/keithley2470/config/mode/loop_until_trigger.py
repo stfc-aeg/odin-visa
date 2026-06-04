@@ -24,7 +24,7 @@ class LoopUntilTrigger(ParameterTreeMixin):
     def _load(self):
         self._device.write(f"""
 :TRIG:LOAD "Empty" ;
-:TRIG:BLOCK:MDIG 1, "{self._device.config.buffer.name}", 1 ;
+:TRIG:BLOCK:MDIG 1, "{self._device.control.config.buffer.name}", 1 ;
 :TRIG:BLOCK:BRANCH:EVENT 2, COMM, 0 ;
 :TRIG:BLOCK:BRANCH:ALWAYS 3, 1
         """)

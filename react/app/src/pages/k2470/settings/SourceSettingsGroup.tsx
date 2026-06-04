@@ -1,9 +1,9 @@
-import type { Keithley2470Props } from "@/lib/types";
+import type { ControlEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
 import { EndpointDropdown, EndpointRangeInput } from "@dssg/odin-react";
 import { DropdownItem } from "react-bootstrap";
 
-export const SourceSettingsGroup = ({ control_endpoint }: Keithley2470Props) => {
+export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   const source = control_endpoint.data.config.source;
   const functionName = source.function === "VOLT" ? "Voltage" : "Current";
   const inverseFunctionName = source.function === "VOLT" ? "Current" : "Voltage";

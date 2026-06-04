@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+from tracemalloc import start
 from typing import TYPE_CHECKING
 
 from odin_control.adapters.parameter_tree import ParameterTree
@@ -27,16 +28,13 @@ class Buffer(ParameterTreeMixin):
         pass
 
     def get_buffer(self):
+        logging.info("start_from: {self.start_from}")
         return self._buffer_manager.get_buffer(
             start=self.start_from,
             resample_method=self._resample_method,
             bin_size=self._bin_size,
         )
 
-    def set_start_from(self, start_from: int):
-        self.start_from = start_from
-
-    start_from = Leaf(int, set=set_start_from)
     buffer = Leaf(list[tuple[int, float, float]], get_buffer, None)
 
 
@@ -44,6 +42,7 @@ class Buffers(ParameterTreeMixin):
     def __init__(self, device: "K2470Device", buffer_manager: BufferManager):
         self._device = device
         self._buffer_manager = buffer_manager
+        self.start_from = 0
 
         self.buffers = {}
         for buffer_config in self._device._config["buffers"]:
@@ -53,11 +52,20 @@ class Buffers(ParameterTreeMixin):
                 buffer_config.get("resample_method"),
             )
 
+    def set_start_from(self, start_from: int):
+        logging.info(f"old {self.start_from} | new {start_from}")
+        self.start_from = start_from
+        for _, buffer in self.buffers.items():
+            buffer.start_from = start_from
+
     def as_tree(self) -> ParameterTree:
-        logging.info(f"{self.buffers}")
-        return ParameterTree(
+        buffers = ParameterTree(
             {name: buffer.as_tree() for name, buffer in self.buffers.items()}
         )
+        start_from = ParameterTree(
+            {"timestamp": (lambda: self.start_from, self.set_start_from)}
+        )
+        return ParameterTree({"buffers": buffers, "start_from": start_from})
 
     def update(self):
         for _, buffer in self.buffers.items():

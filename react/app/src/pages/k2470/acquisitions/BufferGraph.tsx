@@ -1,4 +1,4 @@
-import type { K2470 } from "@/lib/ParamTreeType";
+import type { BufferItem, Buffers, Buffer, K2470 } from "@/lib/ParamTreeType";
 import type { DeviceBundle, Keithley2470Props } from "@/lib/types";
 import { EndpointSlider, OdinGraph, type AdapterEndpoint } from "@dssg/odin-react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -32,91 +32,87 @@ const evenlySpaced = (arr, count = 6) => {
 //   })
 // }
 
-export const BufferGraph = ({ control_endpoint, buffers_endpoint }: Keithley2470Props) => {
-  return <h1>graph</h1>
-// const { data, isLoading, isError, fetchNextPage } = useBuffersQuery(bundle, "full");
-// const [lastTimestamp, setLastTimestamp] = useState(0);
-// const [bufferData, setBufferData] = useState([]);
-// const buffers = bundle.device.acquisition.buffers;
-// const [selectedBuffer, setSelectedBuffer] = useState(Object.keys(buffers)[0]);
-// const [range, setRange] = useState(10);
-// const selectedBufferData = buffers[selectedBuffer].buffer;
-//
-// // useEffect(() => {
-// //   const interval = setInterval(() => {
-// //     bundle.endpoint.put({ start_from: lastTimestamp }, `${bundle.path}/acquisition/buffers/${selectedBuffer}`);
-// //     setBufferData(bufferData.concat(selectedBufferData));
-// //     setLastTimestamp(selectedBufferData.at(-1)[0])
-// //   }, 1000);
-// //   return () => clearInterval(interval);
-// // }, [bufferData, bundle.endpoint, bundle.path, lastTimestamp, selectedBufferData]);
-//
-//
-//
-//
-// const slicedGraphData = (x: number[], y: number[], range: number): Partial<Data> => {
-//   if (x.length == 0) {
-//     return { x: [], y: [] };
-//   }
-//   const lowerBound = x.at(-1)! - range;
-//   const lowerBoundIndex = x.findIndex((t) => t >= lowerBound);
-//   return {
-//     x: x.slice(lowerBoundIndex, -1),
-//     y: y.slice(lowerBoundIndex, -1),
-//   }
-// }
-// const graphData: Partial<Data>[] = [{ x: col(bufferData, 0), y: col(bufferData, 1) }];
-// const unslicedGraphData: Partial<Data>[] = [{
-//   x: col(selectedBufferData, 0),
-//   y: col(selectedBufferData, 1),
-// }];
-//
-// const tickvals = evenlySpaced(col(bufferData, 0), 8);
-// const ticktext = tickvals.map((val) => `${Math.floor(val / 1_000_000)}s`)
-//
-// const graphLayout: Partial<Layout> = {
-//   xaxis: {
-//     // rangeslider: {},
-//     tickvals: tickvals,
-//     ticktext: ticktext,
-//     range: [
-//       col(bufferData, 0).at(-1) - (range * 1_000_000),
-//       col(bufferData, 0).at(-1),
-//     ]
-//   }
-// };
-//
-// return (
-//   <div className="container-fluid p-3">
-//     <div className="row">
-//       <div className="col">
-//         <OdinGraph data={graphData} layout={graphLayout} style={{ height: "auto" }} />
-//       </div>
-//     </div>
-//     <div className="row align-items-center">
-//       <div className="col-3 col-sm-4">
-//         <InputGroup>
-//           <InputGroup.Text>Show last</InputGroup.Text>
-//           <Form.Control value={range} />
-//           <InputGroup.Text>s</InputGroup.Text>
-//         </InputGroup>
-//       </div>
-//       <div className="col">
-//         <Form.Range min={0} max={600} value={range} onChange={(event) => setRange(event.target.valueAsNumber)} />
-//       </div>
-//       <div className="col-auto">
-//         <Dropdown>
-//           <Dropdown.Toggle className="w-100">
-//             {selectedBuffer}
-//           </Dropdown.Toggle>
-//           <Dropdown.Menu>
-//             {Object.keys(buffers).map((name) =>
-//               <Dropdown.Item key={name} onClick={() => setSelectedBuffer(name)}>{name}</Dropdown.Item>
-//             )}
-//           </Dropdown.Menu>
-//         </Dropdown>
-//       </div>
-//     </div>
-//   </div >
-// );
+export const BufferGraph = ({ data }: { data: BufferItem[] }) => {
+  const [range, setRange] = useState(10);
+
+
+  // const { data, isLoading, isError, fetchNextPage } = useBuffersQuery(bundle, "full");
+  // const [bufferData, setBufferData] = useState([]);
+  // const buffers = bundle.device.acquisition.buffers;
+  // const [selectedBuffer, setSelectedBuffer] = useState(Object.keys(buffers)[0]);
+  // const selectedBufferData = buffers[selectedBuffer].buffer;
+  //
+  // // useEffect(() => {
+  // //   const interval = setInterval(() => {
+  // //     bundle.endpoint.put({ start_from: lastTimestamp }, `${bundle.path}/acquisition/buffers/${selectedBuffer}`);
+  // //     setBufferData(bufferData.concat(selectedBufferData));
+  // //     setLastTimestamp(selectedBufferData.at(-1)[0])
+  // //   }, 1000);
+  // //   return () => clearInterval(interval);
+  // // }, [bufferData, bundle.endpoint, bundle.path, lastTimestamp, selectedBufferData]);
+  //
+  //
+  //
+  //
+  // const slicedGraphData = (x: number[], y: number[], range: number): Partial<Data> => {
+  //   if (x.length == 0) {
+  //     return { x: [], y: [] };
+  //   }
+  //   const lowerBound = x.at(-1)! - range;
+  //   const lowerBoundIndex = x.findIndex((t) => t >= lowerBound);
+  //   return {
+  //     x: x.slice(lowerBoundIndex, -1),
+  //     y: y.slice(lowerBoundIndex, -1),
+  //   }
+  // }
+  const graphData: Partial<Data>[] = [{ x: col(data, 0), y: col(data, 1) }];
+
+  // const tickvals = evenlySpaced(col(bufferData, 0), 8);
+  // const ticktext = tickvals.map((val) => `${Math.floor(val / 1_000_000)}s`)
+  //
+  const graphLayout: Partial<Layout> = {
+    xaxis: {
+      // rangeslider: {},
+      range: [
+        col(data, 0).at(-1) - (range * 1_000_000),
+        col(data, 0).at(-1),
+      ]
+    }
+  };
+  //
+  return (
+    <div className="container-fluid p-3">
+      <div className="row">
+        <div className="col">
+          <OdinGraph data={graphData} layout={graphLayout} style={{ height: "auto" }} />
+        </div>
+      </div>
+      <div className="row align-items-center">
+        <div className="col-3 col-sm-4">
+          <InputGroup>
+            <InputGroup.Text>Show last</InputGroup.Text>
+            <Form.Control value={range} />
+            <InputGroup.Text>s</InputGroup.Text>
+          </InputGroup>
+        </div>
+        <div className="col">
+          <Form.Range min={0} max={600} value={range} onChange={(event) => setRange(event.target.valueAsNumber)} />
+        </div>
+        <div className="col-auto">
+          {/*
+          <Dropdown>
+            <Dropdown.Toggle className="w-100">
+              {selectedBuffer}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              {Object.keys(buffers).map((name) =>
+                <Dropdown.Item key={name} onClick={() => setSelectedBuffer(name)}>{name}</Dropdown.Item>
+              )}
+            </Dropdown.Menu>
+          </Dropdown>
+        */}
+        </div>
+      </div>
+    </div >
+  );
 }

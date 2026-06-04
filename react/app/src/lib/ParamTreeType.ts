@@ -110,10 +110,17 @@ export interface Status extends ParamNode {
   second_state: StatusType;
 }
 
-export type Buffers = Record<string, Buffer>;
+export interface Buffers extends ParamNode {
+  buffers: Record<string, Buffer>,
+  start_from: StartFrom,
+}
+
 export type BufferItem = [timestamp: number, source: number, sense: number];
+
+export interface StartFrom extends ParamNode {
+  timestamp: number;
+}
 
 export interface Buffer extends ParamNode {
   buffer: BufferItem[];
-  start_from: number,
 }

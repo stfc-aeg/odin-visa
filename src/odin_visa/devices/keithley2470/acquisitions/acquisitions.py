@@ -24,9 +24,13 @@ class Acquisitions(ParameterTreeMixin):
         self.set_output(False)
         self.paused = True
 
+    def do_clear(self, _):
+        self._config.buffer._clear(_)
+
     def do_start(self, _):
         self.paused = False
 
+        self._config.buffer._clear(_)
         match self.type:
             case AcquisitionType.LOOP_UNTIL_TRIGGER:
                 self._config.mode.loop_until_trigger._load()
@@ -75,6 +79,7 @@ class Acquisitions(ParameterTreeMixin):
 
     type = Leaf(AcquisitionType, set=set_type)
     output = Leaf(bool, set=set_output)
+    clear = Leaf(NoneType, set=do_clear)
     start = Leaf(NoneType, set=do_start)
     stop = Leaf(NoneType, set=do_stop)
     paused = Leaf(bool, set=set_paused)

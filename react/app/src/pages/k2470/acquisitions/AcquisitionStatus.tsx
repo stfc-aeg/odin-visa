@@ -1,5 +1,5 @@
 import type { StatusType } from "@/lib/ParamTreeType";
-import type { Keithley2470Props } from "@/lib/types";
+import type { ControlEndpointProp } from "@/lib/types";
 
 export type TextColors = "text-primary" | "text-secondary" | "text-success" | "text-danger" | "text-warning" | "text-info";
 
@@ -15,7 +15,7 @@ const statusColorMap: Record<StatusType, TextColors> = {
   ABORTED: "text-danger",
 };
 
-export const AcquisitionStatus = ({ control_endpoint }: Keithley2470Props) => {
+export const AcquisitionStatus = ({ control_endpoint }: ControlEndpointProp) => {
   return (
     <div className="d-flex gap-2">
       <h3 className="text-muted text-uppercase fs-4 fw-bold mb-2">Status:</h3>

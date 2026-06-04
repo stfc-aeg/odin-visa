@@ -35,12 +35,14 @@ class BufferManager:
         self.executor = ThreadPoolExecutor(max_workers=1)
         self._stop_event = threading.Event()
         self._update_future = None
+        self._config = config
 
         self.dataframe_cache = None
         self.is_acquiring = False
         self.acquisition_start_time = 0
 
     def start_acquisition(self):
+        self.reader.reset()
         self.savefile_manager.create_dataset()
         self._stop_event.clear()
         self.is_acquiring = True
@@ -117,13 +119,16 @@ class BufferManager:
                 if self._stop_event.is_set():
                     break
                 logging.exception("Error updating device buffer")
-            self._stop_event.wait(1)
+            self._stop_event.wait(0.1)
 
 
 class DeviceBufferReader:
     def __init__(self, device: "K2470Device", config: BufferConfig):
         self.device = device
         self.config = config
+        self.prev_end = 0
+
+    def reset(self):
         self.prev_end = 0
 
     def read_new_items(self) -> NDArray:

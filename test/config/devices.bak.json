@@ -1,0 +1,39 @@
+{
+  "devices": [
+    {
+      "name": "TestK2470",
+      "type": "K2470",
+      "address": "TCPIP::192.168.0.142::INSTR",
+      "buffers": [
+        {
+          "name": "full"
+        },
+        {
+          "name": "mean_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "mean"
+        },
+        {
+          "name": "median_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "median"
+        },
+        {
+          "name": "min_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "min"
+        },
+        {
+          "name": "max_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "max"
+        },
+        {
+          "name": "first_50ms",
+          "resample_bin_size": "50ms",
+          "resample_method": "first"
+        }
+      ]
+    }
+  ]
+}

@@ -7,7 +7,10 @@ export const hasData = <T extends Record<string, ParamTree>>(endpoint: AdapterEn
   return endpoint.data !== undefined;
 }
 
-export interface Keithley2470Props {
+export interface ControlEndpointProp {
   control_endpoint: WithRequired<AdapterEndpoint<Control>, "data">
-  buffers_endpoint?: WithRequired<AdapterEndpoint<Buffers>, "data">
+}
+
+export interface BuffersEndpointProp {
+  buffers_endpoint: WithRequired<AdapterEndpoint<Buffers>, "data">
 }
