@@ -71,7 +71,7 @@ class BufferManager:
             return []
 
         if bin_size is not None:
-            df = df.resample(bin_size)
+            df = df.ffill().resample(bin_size)
         match resample_method:
             case "mean":
                 df = df.mean()
@@ -84,7 +84,7 @@ class BufferManager:
             case "first":
                 df = df.first()
 
-        df = df.ffill().loc[us(start) : us(end)]
+        df = df.loc[us(start) : us(end)]
 
         arr = [
             (int(idx.value / 1000), src, rdg)

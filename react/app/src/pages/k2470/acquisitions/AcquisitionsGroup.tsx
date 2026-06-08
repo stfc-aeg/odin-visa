@@ -6,53 +6,15 @@ import { useState } from "react";
 import { Dropdown } from "react-bootstrap";
 import { useQuery } from "@tanstack/react-query";
 import type { BufferItem } from "@/lib/ParamTreeType";
+import { useBufferStore } from "@/lib/buffersStore";
 
 export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: ControlEndpointProp & BuffersEndpointProp) => {
   const output = control_endpoint.data.acquisitions.output;
   const state = control_endpoint.data.acquisitions.status.state;
   const running = state == "RUNNING" || state == "WAITING";
-  const buffers = buffers_endpoint.data.buffers;
+  const { buffers } = useBufferStore.getState();
 
-  const [lastTimestamp, setLastTimestamp] = useState(0);
   const [selectedBufferName, setSelectedBufferName] = useState(Object.keys(buffers).at(0) ?? "");
-  const [bufferData, setBufferData] = useState<Record<string, BufferItem[]>>({});
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["bufferData"],
-    queryFn: async () => {
-      const state = control_endpoint.data.acquisitions.status.state;
-
-      if (state == "RUNNING" || state == "WAITING") {
-        // only show buffer elements added since the last fetch
-        await buffers_endpoint.put({ timestamp: lastTimestamp + 1 }, "start_from");
-        // get the new data for the current buffer
-        const new_data = await buffers_endpoint.get<Record<string, BufferItem[]>>(`buffers`);
-
-        // get the timestamp of the last element in each buffer, and find the most recent
-        const lastElementTimestamp = Math.max(...Object.values(new_data)
-          .filter((buffer) => buffer.length != 0) // filter buffers that haven't been updated
-          .map((buffer) => buffer.at(-1)![0]) // get the timestamp from the buffer
-        );
-        if (lastElementTimestamp) setLastTimestamp(lastElementTimestamp);
-
-        // update all the buffers in the useState
-        setBufferData((current) => {
-          // create a copy of the buffers, required for react to detect state change
-          const copy = { ...current };
-          for (const key in new_data) {
-            // set the buffer to the old data + new data
-            copy[key] = [...(copy[key] ?? []), ...new_data[key]];
-          }
-          return copy;
-        })
-      }
-      // return the full data state (as required by tanstack query)
-      return bufferData;
-    },
-    refetchInterval: 1000,
-    staleTime: 1000,
-  })
-
-  if (isLoading || isError || !data) return <h1>Loading Graph</h1>;
 
   return (
     <div className="container-fluid p-3">
@@ -84,8 +46,8 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
             endpoint={control_endpoint}
             fullpath="acquisitions/start"
             post_method={() => {
-              setBufferData({});
-              setLastTimestamp(0);
+              // setBufferData({});
+              // setLastTimestamp(0);
             }}
           >
             Start
@@ -122,7 +84,7 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
         <div className="border w-100" />
       </div>
       <div className="row">
-        <BufferGraph data={data[selectedBufferName]} />
+        <BufferGraph data={buffers[selectedBufferName]?.buffer} />
       </div>
     </div>
   );

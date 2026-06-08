@@ -25,7 +25,6 @@ class Buffer(ParameterTreeMixin):
         self.start_from = 0
 
     def get_buffer(self):
-        logging.info("start_from: {self.start_from}")
         return self._buffer_manager.get_buffer(
             start=self.start_from,
             resample_method=self._resample_method,

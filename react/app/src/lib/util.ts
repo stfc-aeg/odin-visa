@@ -3,3 +3,6 @@ export function floatEquality(a: any, b: any): boolean {
   return Math.abs(a - b) < Number.EPSILON;
 }
 
+export function sleep(ms: number) {
+  return new Promise(f => setTimeout(f, ms));
+}
