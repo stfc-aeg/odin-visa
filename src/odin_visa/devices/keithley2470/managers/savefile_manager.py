@@ -16,6 +16,7 @@ class SaveFileManager:
 
     def __init__(self, device: "K2470Device"):
         self.path = Path()
+        self.file = None
         self.dataset_name = ""
         self.config = device.control.config.savefile
 
@@ -30,40 +31,44 @@ class SaveFileManager:
         logging.warning(
             "%s %s %s", self.config.filename, self.config.filepath, self.dataset_name
         )
-        with h5py.File(self.path, "w") as f:
-            f.create_dataset(
-                self.dataset_name,
-                shape=(0,),
-                maxshape=(None,),
-                dtype=ITEM_DTYPE,
-                compression="gzip",
-            )
+        self.file = h5py.File(self.path, "a")
+        self.file.create_dataset(
+            self.dataset_name,
+            shape=(0,),
+            maxshape=(None,),
+            dtype=ITEM_DTYPE,
+            compression="gzip",
+        )
 
     def save_chunk(self, chunk: NDArray):
-        with h5py.File(self.path, "a") as f:
-            ds = f[self.dataset_name]
-            if not isinstance(ds, h5py.Dataset):
-                logging.error(
-                    "Could not access dataset %s in %s",
-                    self.dataset_name,
-                    self.path,
-                )
-                return
-            old_len = ds.shape[0]
-            ds.resize(old_len + len(chunk), axis=0)
-            ds[old_len:] = chunk
+        if self.file is None:
+            logging.warning("attempted to save chunk while no file is opened")
+            return
+
+        ds = self.file[self.dataset_name]
+        if not isinstance(ds, h5py.Dataset):
+            logging.error(
+                "Could not access dataset %s in %s",
+                self.dataset_name,
+                self.path,
+            )
+            return
+        old_len = ds.shape[0]
+        ds.resize(old_len + len(chunk), axis=0)
+        ds[old_len:] = chunk
 
     def read(self) -> NDArray | None:
-        try:
-            with h5py.File(self.path, "r") as f:
-                ds = f[self.dataset_name]
-                if not isinstance(ds, h5py.Dataset):
-                    logging.error(
-                        "Could not access dataset %s in %s",
-                        self.dataset_name,
-                        self.path,
-                    )
-                    return
-                return ds[:]
-        except:
+        if self.file is None:
+            logging.warning("attempted to read data while no file is opened")
             return
+
+        ds = self.file[self.dataset_name]
+        if not isinstance(ds, h5py.Dataset):
+            logging.error(
+                "Could not access dataset %s in %s",
+                self.dataset_name,
+                self.path,
+            )
+            return
+
+        return ds[:]
