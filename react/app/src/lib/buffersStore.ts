@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import type { BufferItem } from "./ParamTreeType"
 import type { AdapterEndpoint } from "@dssg/odin-react";
+import Denque from "denque";
 
 interface BufferLevel {
-  buffer: BufferItem[];
+  buffer: Denque<BufferItem>;
+  index: Denque<number>;
 }
 
 interface BufferStore {
@@ -30,18 +32,28 @@ export const useBufferStore = create<BufferStore>((set, get) => ({
           const newTimestamp = newData[newData.length - 1][0];
 
           buffers[name] = {
-            buffer: [...newData],
+            buffer: new Denque(newData),
+            index: new Denque([newData.length]),
           };
 
           sharedCursor = Math.max(sharedCursor, newTimestamp);
         } else {
-          current.buffer.push(...newData);
+          for (let i = 0; i < newData.length; i++) {
+            current.buffer.push(newData[i]);
+          }
+          current.index.push(newData.length);
           const newTimestamp = newData[newData.length - 1][0];
           sharedCursor = Math.max(sharedCursor, newTimestamp);
+
+          // TODO: Customisable retention
+          if (current.index.length > 5) {
+            const toRemove = current.index.shift()!;
+            current.buffer.remove(0, toRemove);
+          }
         }
+
       }
 
-      console.log("appended buffers. new state:", buffers);
       return {
         buffers,
         cursor: sharedCursor,

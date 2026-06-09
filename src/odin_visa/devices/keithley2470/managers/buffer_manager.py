@@ -51,6 +51,7 @@ class BufferManager:
 
     def stop_acquisition(self):
         self.is_acquiring = False
+        self.savefile_manager.cleanup()
         self._stop_event.set()
 
     def cleanup(self):

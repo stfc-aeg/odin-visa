@@ -13,6 +13,7 @@
   "dependencies": {
     "@dssg/odin-react": "2.2.0",
     "@tanstack/react-query": "^5.100.14",
+    "denque": "^2.1.0",
     "popper": "^1.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

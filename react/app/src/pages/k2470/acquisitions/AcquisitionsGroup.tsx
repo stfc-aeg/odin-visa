@@ -84,7 +84,7 @@ export const AcquisitionsGroup = ({ control_endpoint, buffers_endpoint }: Contro
         <div className="border w-100" />
       </div>
       <div className="row">
-        <BufferGraph data={buffers[selectedBufferName]?.buffer} />
+        <BufferGraph data={buffers[selectedBufferName]?.buffer.toArray()} />
       </div>
     </div>
   );

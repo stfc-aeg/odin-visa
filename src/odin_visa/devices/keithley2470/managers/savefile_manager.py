@@ -72,3 +72,8 @@ class SaveFileManager:
             return
 
         return ds[:]
+
+    def cleanup(self):
+        if self.file is not None:
+            self.file.close()
+            self.file = None
