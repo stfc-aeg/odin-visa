@@ -1,10 +1,16 @@
+import type { BufferLevel } from "@/lib/buffersStore";
 import type { BufferItem, Buffers, Buffer, K2470 } from "@/lib/ParamTreeType";
 import type { DeviceBundle, Keithley2470Props } from "@/lib/types";
 import { EndpointSlider, OdinGraph, type AdapterEndpoint } from "@dssg/odin-react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import type Denque from "denque";
 import type { Data, Layout } from "plotly.js";
 import { useEffect, useState } from "react";
 import { DropdownButton, Dropdown, Form, InputGroup, Container, Row, Col } from "react-bootstrap";
+
+import uPlot, { type AlignedData, type Options } from 'uplot';
+import UplotReact from "uplot-react";
+import 'uplot/dist/uPlot.min.css';
 
 const col = (arr, index) => arr.map((row) => row[index]);
 
@@ -15,84 +21,72 @@ const evenlySpaced = (arr, count = 6) => {
   );
 }
 
-// const useBuffersQuery = (bundle: DeviceBundle<K2470>, buffer: string) => {
-//   return useInfiniteQuery({
-//     queryKey: ["buffer", buffer],
-//     queryFn: async ({ pageParam }) => {
-//       await bundle.endpoint.put(pageParam, `${bundle.path}/acquisition/buffers/${buffer}/start_from`);
-//       return bundle.device.acquisition.buffers[buffer].buffer;
-//     },
-//     initialPageParam: 0,
-//     getNextPageParam: (lastPage, pages) => {
-//       if (lastPage) {
-//         return (lastPage.at(-1) ?? [0])[0]
-//       }
-//       else return 0;
-//     },
-//   })
-// }
+const toGraphData = (range: number, buffer: Denque<BufferItem>): AlignedData => {
+  const lastItem = buffer.peekBack();
+  const startTimestamp = Math.max(0, lastItem![0] - (range * 1_000_000));
 
-export const BufferGraph = ({ data }: { data: BufferItem[] }) => {
+  const graphDataX = [];
+  const graphDataY = [];
+  let i = -2;
+  while (true) {
+    const item = buffer.peekAt(i);
+    if (!item || item[0] < startTimestamp) break;
+    graphDataX.push(item[0]);
+    graphDataY.push(item[2]);
+    i--;
+  }
+
+  return [graphDataX.reverse(), graphDataY.reverse()]
+};
+
+export const BufferGraph = ({ buffers }: { buffers: Record<string, BufferLevel> }) => {
+  const [selectedBufferName, setSelectedBufferName] = useState(Object.keys(buffers).at(0) ?? "");
+  const selectedBuffer = buffers[selectedBufferName].buffer;
   const [range, setRange] = useState(10);
 
-  if (!data) return <h1>Loading</h1>;
+  if (selectedBuffer.length < 2) return <div>Hit start to begin acquisition</div>;
 
-  // const { data, isLoading, isError, fetchNextPage } = useBuffersQuery(bundle, "full");
-  // const [bufferData, setBufferData] = useState([]);
-  // const buffers = bundle.device.acquisition.buffers;
-  // const [selectedBuffer, setSelectedBuffer] = useState(Object.keys(buffers)[0]);
-  // const selectedBufferData = buffers[selectedBuffer].buffer;
-  //
-  // // useEffect(() => {
-  // //   const interval = setInterval(() => {
-  // //     bundle.endpoint.put({ start_from: lastTimestamp }, `${bundle.path}/acquisition/buffers/${selectedBuffer}`);
-  // //     setBufferData(bufferData.concat(selectedBufferData));
-  // //     setLastTimestamp(selectedBufferData.at(-1)[0])
-  // //   }, 1000);
-  // //   return () => clearInterval(interval);
-  // // }, [bufferData, bundle.endpoint, bundle.path, lastTimestamp, selectedBufferData]);
-  //
-  //
-  //
-  //
-  // const slicedGraphData = (x: number[], y: number[], range: number): Partial<Data> => {
-  //   if (x.length == 0) {
-  //     return { x: [], y: [] };
-  //   }
-  //   const lowerBound = x.at(-1)! - range;
-  //   const lowerBoundIndex = x.findIndex((t) => t >= lowerBound);
-  //   return {
-  //     x: x.slice(lowerBoundIndex, -1),
-  //     y: y.slice(lowerBoundIndex, -1),
-  //   }
-  // }
-  const graphData: Partial<Data>[] = [{ x: col(data, 0), y: col(data, 1) }];
+  const graphData: AlignedData = toGraphData(range, selectedBuffer);
 
-  // const tickvals = evenlySpaced(col(bufferData, 0), 8);
-  // const ticktext = tickvals.map((val) => `${Math.floor(val / 1_000_000)}s`)
-  //
-  const graphLayout: Partial<Layout> = {
-    xaxis: {
-      // rangeslider: {},
-      range: [
-        col(data, 0).at(-1) - (range * 1_000_000),
-        col(data, 0).at(-1),
-      ]
-    }
+  const graphOpts: Options = {
+    width: 600,
+    height: 800,
+    scales: {
+      x: {
+        time: false,
+      }
+    },
+    series: [
+      {},
+      {
+        stroke: 'blue',
+      }
+    ]
   };
+  //
+  // const graphLayout: Partial<Layout> = {
+  //   uirevision: "fixed",
+  //   xaxis: {
+  //     range: [
+  //       col(selectedBuffer, 0).at(-1) - (range * 1_000_000),
+  //       col(selectedBuffer, 0).at(-1),
+  //     ]
+  //   }
+  // };
   //
   return (
     <div className="container-fluid p-3">
       <div className="row">
         <div className="col">
-          <OdinGraph data={graphData} layout={graphLayout} style={{ height: "auto" }} />
+          {/*<OdinGraph data={graphData} layout={graphLayout} style={{ height: "auto" }} /> */}
+          <UplotReact data={graphData} options={graphOpts} />
         </div>
       </div>
       <div className="row align-items-center">
         <div className="col-3 col-sm-4">
           <InputGroup>
             <InputGroup.Text>Show last</InputGroup.Text>
-            <Form.Control value={range} />
+            <Form.Control value={range} onChange={(event) => setRange(parseFloat(event.target.value))} />
             <InputGroup.Text>s</InputGroup.Text>
           </InputGroup>
         </div>
@@ -100,18 +94,18 @@ export const BufferGraph = ({ data }: { data: BufferItem[] }) => {
           <Form.Range min={0} max={600} value={range} onChange={(event) => setRange(event.target.valueAsNumber)} />
         </div>
         <div className="col-auto">
-          {/*
           <Dropdown>
             <Dropdown.Toggle className="w-100">
-              {selectedBuffer}
+              {selectedBufferName}
             </Dropdown.Toggle>
             <Dropdown.Menu>
               {Object.keys(buffers).map((name) =>
-                <Dropdown.Item key={name} onClick={() => setSelectedBuffer(name)}>{name}</Dropdown.Item>
+                <Dropdown.Item key={name} onClick={() => {
+                  setSelectedBufferName(name);
+                }}>{name}</Dropdown.Item>
               )}
             </Dropdown.Menu>
           </Dropdown>
-        */}
         </div>
       </div>
     </div >

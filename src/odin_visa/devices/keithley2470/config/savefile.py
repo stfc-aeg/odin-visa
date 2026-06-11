@@ -10,7 +10,7 @@ class SaveFileConfig(ParameterTreeMixin):
     def __init__(self, device: "K2470Device"):
         self._device = device
 
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%MZ")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
         self.filepath = "test/acquisitions"
         self.filename = f"{timestamp}_k2470.hdf5"
         self.dataset_name = "acquisition"

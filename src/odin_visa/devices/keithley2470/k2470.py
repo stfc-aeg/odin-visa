@@ -164,7 +164,7 @@ class K2470Device(Device):
                 break
 
             if error_string != '0,"No error;0;0 0"':
-                logging.error(f"Error log contains: {error_string}")
+                logging.warning(f"Error log contains: {error_string}")
                 self.control.event_log.push_event(error_string, during_command)
             else:
                 break

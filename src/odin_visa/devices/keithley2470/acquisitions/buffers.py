@@ -25,11 +25,14 @@ class Buffer(ParameterTreeMixin):
         self.start_from = 0
 
     def get_buffer(self):
-        return self._buffer_manager.get_buffer(
-            start=self.start_from,
-            resample_method=self._resample_method,
-            bin_size=self._bin_size,
-        )
+        try:
+            return self._buffer_manager.get_buffer(
+                start=self.start_from,
+                resample_method=self._resample_method,
+                bin_size=self._bin_size,
+            )
+        except Exception as e:
+            logging.warning("Could not read from buffer: %s", e)
 
 
 class Buffers(ParameterTreeMixin):

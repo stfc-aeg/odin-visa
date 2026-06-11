@@ -1,3 +1,4 @@
+from timeit import default_timer
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import threading
@@ -36,6 +37,7 @@ class BufferManager:
         self._stop_event = threading.Event()
         self._update_future = None
         self._config = config
+        self._device = device
 
         self.dataframe_cache = None
         self.is_acquiring = False
@@ -67,10 +69,10 @@ class BufferManager:
         bin_size: str | None = None,
         resample_method: str | None = None,
     ) -> list:
-        df = self.get_dataframe()
+        df = self.get_dataframe(start)
         if df is None:
             return []
-
+        df = df.loc[us(start) : us(end)]
         if bin_size is not None:
             df = df.ffill().resample(bin_size)
         match resample_method:
@@ -84,25 +86,24 @@ class BufferManager:
                 df = df.max()
             case "first":
                 df = df.first()
-
-        df = df.loc[us(start) : us(end)]
-
         arr = [
             (int(idx.value / 1000), src, rdg)
             for idx, src, rdg in df.itertuples(index=True, name=None)
         ]
         return arr
 
-    def get_dataframe(self):
+    def get_dataframe(self, start):
         if self.dataframe_cache is not None:
             return self.dataframe_cache
-
         buffer = self.savefile_manager.read()
         if buffer is None:
             return
-        return pd.DataFrame(data=buffer, columns=["source", "reading"]).set_index(
+        start = np.argmax(buffer["timestamp"] > start) - 1
+        buffer = buffer[start:]
+        df = pd.DataFrame(data=buffer, columns=["source", "reading"]).set_index(
             pd.to_timedelta(buffer["timestamp"], unit="us")
         )
+        return df
 
     def invalidate_dataframe(self):
         self.dataframe_cache = None
@@ -114,7 +115,6 @@ class BufferManager:
                 chunk = self.reader.read_new_items()
                 if self._stop_event.is_set():
                     break
-                logging.warning(f"CHUNK: {chunk}")
                 self.savefile_manager.save_chunk(chunk)
             except Exception:
                 if self._stop_event.is_set():

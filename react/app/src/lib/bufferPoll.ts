@@ -7,7 +7,6 @@ export class BufferPoll {
   private endpoint: Pick<AdapterEndpoint, "get" | "put">;
 
   constructor(endpoint: Pick<AdapterEndpoint, "get" | "put">) {
-    console.log("creating buffer poll");
     this.endpoint = endpoint;
   }
 
@@ -28,8 +27,8 @@ export class BufferPoll {
       }
       const end = performance.now();
 
-      console.log(`poll took ${end - start}ms`);
-      await sleep(1000);
+      const refreshTime = Math.max(0, useBufferStore.getState().refreshTime - (end - start));
+      await sleep(refreshTime);
     }
   }
 
