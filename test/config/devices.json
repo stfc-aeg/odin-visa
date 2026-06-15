@@ -4,6 +4,9 @@
       "name": "TestK2470",
       "type": "K2470",
       "address": "TCPIP::192.168.0.142::INSTR",
+      "savefile_config": {
+        "data_folder": "/home/callum/dev/dssg/odin-visa/test/acquisitions"
+      },
       "buffers": [
         {
           "name": "full"

@@ -10,9 +10,10 @@ from odin_visa.devices.device_config import DeviceConfig, DeviceType
 from odin_visa.devices.keithley2470.acquisitions.acquisitions import Acquisitions
 from odin_visa.devices.keithley2470.acquisitions.buffers import Buffers
 from odin_visa.devices.keithley2470.acquisitions.status import TriggerModelState
-from odin_visa.devices.keithley2470.config import Config
+from odin_visa.devices.keithley2470.config.config import Config
 from odin_visa.devices.keithley2470.event_log import EventLog
 from odin_visa.devices.keithley2470.managers.buffer_manager import BufferManager
+from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
 from odin_visa.tree import Leaf, ParameterTreeMixin, SubTree
 
 
@@ -20,6 +21,7 @@ class Control(ParameterTreeMixin):
     def __init__(
         self,
         device: "K2470Device",
+        config: DeviceConfig,
         ident: str,
         address: str,
     ):
@@ -27,7 +29,7 @@ class Control(ParameterTreeMixin):
         self.ident = ident
         self.address = address
         self.type = DeviceType.K2470
-        self.config = Config(device)
+        self.config = Config(device, config)
         self.acquisitions = Acquisitions(device, self.config)
 
     event_log = SubTree(EventLog)
@@ -53,8 +55,15 @@ class K2470Device(Device):
 
         self.write("*RST")
 
-        self.control = Control(self, ident, resource._resource_name)
-        self._buffer_manager = BufferManager(self, self.control.config.buffer)
+        self.control = Control(
+            self,
+            config,
+            ident,
+            resource._resource_name,
+        )
+        self._buffer_manager = BufferManager(
+            self, self.control.config.buffer, self.control.config.savefile
+        )
         self.buffers = Buffers(self, self._buffer_manager)
 
     def update(self):

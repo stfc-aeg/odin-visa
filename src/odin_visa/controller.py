@@ -1,3 +1,6 @@
+from __future__ import annotations
+from gpib_ctypes.gpib.gpib import dev
+
 from concurrent.futures.thread import ThreadPoolExecutor
 import json
 import threading
@@ -42,9 +45,13 @@ class VisaController(BaseController):
         self._background_future = None
 
         devices_config_path = self.options["devices_config"]
-        with open(devices_config_path, "rb") as f:
-            devices_config = json.load(f)
-        self.devices_config: DevicesConfig = devices_config
+        with open(devices_config_path, "r") as f:
+            devices_config = DevicesConfig.from_json(f.read())
+            if isinstance(devices_config, list):
+                logging.error("Invalid JSON config")
+                return
+            self.devices_config = devices_config
+
         self.visa_timeout_ms = int(self.options.get("visa_timeout_ms", 2000))
 
         # Ensure a single SCPI command is sent at a time across all devices
@@ -75,8 +82,8 @@ class VisaController(BaseController):
         Returns:
             A ParameterTree containing the device count and all device subtrees.
         """
-        for device in self.devices_config["devices"]:
-            address = device["address"]
+        for device in self.devices_config.devices:
+            address = device.address
             try:
                 logging.debug(f"Opening {address}")
                 resource = self.resource_manager.open_resource(
@@ -102,8 +109,8 @@ class VisaController(BaseController):
                 logging.warning(f"Could not query device: {address} ({e})")
                 continue
 
-            if device["type"] == DeviceType.K2470:
-                self.devices[device["name"]] = K2470Device(
+            if device.type == DeviceType.K2470:
+                self.devices[device.name] = K2470Device(
                     resource, ident, self.lock, device
                 )
 

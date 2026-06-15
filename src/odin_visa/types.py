@@ -4,7 +4,7 @@ Provides safe parsers for SCPI response strings that gracefully handle
 None and malformed values by returning configurable defaults."""
 
 from enum import Enum
-from typing import List, Type, TypeVar
+from typing import List, Type, TypeVar, Generic, TypeAlias, Union
 
 
 class StrEnum(str, Enum):
@@ -16,6 +16,31 @@ class StrEnum(str, Enum):
 
     def __str__(self) -> str:
         return str(self.value)
+
+
+T = TypeVar("T")
+E = TypeVar("E")
+
+
+class Ok(Generic[T]):
+    __match_args__ = ("value",)
+    iserr = False
+    isok = True
+
+    def __init__(self, value: T):
+        self.value = value
+
+
+class Err(Generic[E]):
+    __match_args__ = ("value",)
+    iserr = True
+    isok = False
+
+    def __init__(self, value: E):
+        self.value = value
+
+
+Result: TypeAlias = Union[Ok[T], Err[E]]
 
 
 def parse_int(raw: str | None, default: int = 0) -> int:

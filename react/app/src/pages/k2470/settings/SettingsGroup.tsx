@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from "react";
+import { Card } from "react-bootstrap";
 
 export interface SettingsGroupProps extends PropsWithChildren {
   title?: string;
@@ -6,13 +7,16 @@ export interface SettingsGroupProps extends PropsWithChildren {
 
 export const SettingsGroup = ({ title, children }: SettingsGroupProps) => {
   return (
-    <div className="container-fluid p-2">
-      <div className="row">
-        {title &&
-          <h3 className="text-muted text-uppercase fs-6 fw-bold mb-2">{title}</h3>
-        }
+    <Card className="p-0 overflow-hidden">
+      <Card.Header
+        className="px-3 py-2 border-bottom fw-semibold"
+        style={{ backgroundColor: '#f5f5f5' }}
+      >
+        {title}
+      </Card.Header>
+      <div className="container-fluid py-2">
+        {children}
       </div>
-      {children}
-    </div>
+    </Card>
   );
 };

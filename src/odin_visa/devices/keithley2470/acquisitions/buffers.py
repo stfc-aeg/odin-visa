@@ -42,11 +42,11 @@ class Buffers(ParameterTreeMixin):
         self.start_from = 0
 
         self.buffers = {}
-        for buffer_config in self._device._config["buffers"]:
-            self.buffers[buffer_config["name"]] = Buffer(
+        for buffer_config in self._device._config.buffers:
+            self.buffers[buffer_config.name] = Buffer(
                 buffer_manager,
-                buffer_config.get("resample_bin_size"),
-                buffer_config.get("resample_method"),
+                buffer_config.resample_bin_size,
+                buffer_config.resample_method,
             )
 
     def set_start_from(self, start_from: int):

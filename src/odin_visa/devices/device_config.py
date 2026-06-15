@@ -1,24 +1,33 @@
-from typing import TypedDict
-
+from dataclass_wizard import JSONSerializable
+from dataclasses import dataclass
 from odin_visa.types import StrEnum
 
 
-class DownsampledBufferConfig(TypedDict):
+@dataclass
+class DownsampledBufferConfig(JSONSerializable):
     name: str
-    resample_bin_size: str | None
-    resample_method: str | None
+    resample_bin_size: str | None = None
+    resample_method: str | None = None
 
 
 class DeviceType(StrEnum):
     K2470 = "K2470"
 
 
-class DeviceConfig(TypedDict):
+@dataclass
+class SaveFileConfig(JSONSerializable):
+    data_folder: str = "/data"
+
+
+@dataclass
+class DeviceConfig(JSONSerializable):
     name: str
     type: DeviceType
     address: str
     buffers: list[DownsampledBufferConfig]
+    savefile_config: SaveFileConfig = SaveFileConfig()
 
 
-class DevicesConfig(TypedDict):
+@dataclass
+class DevicesConfig(JSONSerializable):
     devices: list[DeviceConfig]

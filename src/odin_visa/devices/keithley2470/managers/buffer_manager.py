@@ -1,4 +1,4 @@
-from timeit import default_timer
+from odin_visa.devices.device_config import SaveFileConfig
 from concurrent.futures import ThreadPoolExecutor
 import logging
 import threading
@@ -11,9 +11,10 @@ import pandas as pd
 from tornado.concurrent import run_on_executor
 
 from odin_visa.devices.keithley2470.config.buffer import BufferConfig
+from odin_visa.devices.keithley2470.config.savefile import SaveFileConfigTree
 from odin_visa.devices.keithley2470.managers import ITEM_DTYPE
-from odin_visa.devices.keithley2470.managers.savefile_manager import SaveFileManager
-from odin_visa.types import parse_int
+from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
+from odin_visa.types import parse_int, Ok, Err
 
 if TYPE_CHECKING:
     from odin_visa.devices.keithley2470.k2470 import K2470Device
@@ -30,9 +31,10 @@ class BufferManager:
         self,
         device: "K2470Device",
         config: BufferConfig,
+        savefile_config: SaveFileConfigTree,
     ):
         self.reader = DeviceBufferReader(device, config)
-        self.savefile_manager = SaveFileManager(device)
+        self.file_writer = FileWriter(savefile_config)
         self.executor = ThreadPoolExecutor(max_workers=1)
         self._stop_event = threading.Event()
         self._update_future = None
@@ -44,8 +46,12 @@ class BufferManager:
         self.acquisition_start_time = 0
 
     def start_acquisition(self):
+        res = self.file_writer.create_file()
+        if res.iserr:
+            logging.error(f"Could not start acquisition: {res.value}")
+            return
+
         self.reader.reset()
-        self.savefile_manager.create_dataset()
         self._stop_event.clear()
         self.is_acquiring = True
         self.acquisition_start_time = time.time_ns() // 1_000  # time in microseconds
@@ -53,7 +59,6 @@ class BufferManager:
 
     def stop_acquisition(self):
         self.is_acquiring = False
-        self.savefile_manager.cleanup()
         self._stop_event.set()
 
     def cleanup(self):
@@ -95,9 +100,14 @@ class BufferManager:
     def get_dataframe(self, start):
         if self.dataframe_cache is not None:
             return self.dataframe_cache
-        buffer = self.savefile_manager.read()
-        if buffer is None:
-            return
+
+        match self.file_writer.read():
+            case Ok(b):
+                buffer = b
+            case Err(e):
+                logging.error(f"Could not read buffer: {e}")
+                return
+
         start = np.argmax(buffer["timestamp"] > start) - 1
         buffer = buffer[start:]
         df = pd.DataFrame(data=buffer, columns=["source", "reading"]).set_index(
@@ -115,12 +125,14 @@ class BufferManager:
                 chunk = self.reader.read_new_items()
                 if self._stop_event.is_set():
                     break
-                self.savefile_manager.save_chunk(chunk)
+                res = self.file_writer.write_chunk(chunk)
+                if res.iserr:
+                    logging.error(f"Could not write chunk: {res.value}")
             except Exception:
                 if self._stop_event.is_set():
                     break
                 logging.exception("Error updating device buffer")
-            self._stop_event.wait(0.1)
+            self._stop_event.wait(1)
 
 
 class DeviceBufferReader:
