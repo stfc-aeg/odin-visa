@@ -1,30 +1,29 @@
 from __future__ import annotations
-from gpib_ctypes.gpib.gpib import dev
+import asyncio
+from odin_control.adapters.async_parameter_tree import AsyncParameterTree
+from odin_control.adapters.async_base_controller import AsyncBaseController
 
 from concurrent.futures.thread import ThreadPoolExecutor
-import json
 import threading
 import logging
 from typing import Any
 import pyvisa
 
 from pyvisa.resources import MessageBasedResource
-from tornado.concurrent import run_on_executor
 
-from odin_control.adapters.parameter_tree import ParameterTree, ParameterTreeError
-from odin_control.adapters.base_controller import BaseController
+from odin_control.adapters.parameter_tree import ParameterTreeError
 
 from odin_visa.devices.device import Device
 from odin_visa.devices.device_config import DeviceType, DevicesConfig
-from odin_visa.devices.keithley2470.k2470 import K2470Device
-from odin_visa.tree import ParameterTreeMixin
+from odin_visa.devices.keithley2470.device import K2470Device
+from odin_visa.devices.keithley2470.driver.error import DriverError
 
 # Suppress pyvisa's verbose debug logging during resource enumeration
 logging.getLogger("pyvisa").setLevel(logging.ERROR)
 logging.getLogger("gpib").setLevel(logging.ERROR)
 
 
-class VisaController(BaseController):
+class VisaController(AsyncBaseController):
     """ODIN controller that manages VISA instrument discovery and communication.
 
     Discovers connected instruments via pyvisa, identifies them by *IDN?,
@@ -39,11 +38,12 @@ class VisaController(BaseController):
     """
 
     def __init__(self, options: dict[str, str]):
-        self.options = options
-        self.executor = ThreadPoolExecutor(max_workers=1)
-        self._stop_event = threading.Event()
-        self._background_future = None
+        logging.info("Initialising odin_visa")
 
+        self.options = options
+        self._background_tasks = set()
+
+        logging.debug("Reading devices config")
         devices_config_path = self.options["devices_config"]
         with open(devices_config_path, "r") as f:
             devices_config = DevicesConfig.from_json(f.read())
@@ -51,6 +51,9 @@ class VisaController(BaseController):
                 logging.error("Invalid JSON config")
                 return
             self.devices_config = devices_config
+        logging.debug(
+            f"Read config. Expecting {len(self.devices_config.devices)} devices"
+        )
 
         self.visa_timeout_ms = int(self.options.get("visa_timeout_ms", 2000))
 
@@ -62,27 +65,15 @@ class VisaController(BaseController):
         self.poll_interval = 1.0
         self.resource_manager = pyvisa.ResourceManager()
 
-        self.param_tree: ParameterTree = self.initialise_devices()
+        self._initialise = self.initialise_devices()
 
-        self.start_background_task()
+        logging.info("odin_visa initialised")
 
-    def initialise_devices(self):
-        """Discovers and initializes VISA devices matching the given query.
-
-        Uses pyvisa to list available resources, opens each one, queries *IDN?,
-        and creates a device instance for any recognized instrument.
-
-        Only MessageBasedResource devices are supported (GPIB, USB-TMC, TCPIP).
-        RegisterBasedResources are logged and skipped.
-
-        Args:
-            devices_query: A pyvisa resource filter string (e.g., 'GPIB*::INSTR').
-                If None or empty, no devices are returned.
-
-        Returns:
-            A ParameterTree containing the device count and all device subtrees.
-        """
+    async def initialise_devices(self):
+        logging.info("Discovering and initialising devices")
+        configured = 0
         for device in self.devices_config.devices:
+            logging.info(f"Attempting connection to `{device.address}`")
             address = device.address
             try:
                 logging.debug(f"Opening {address}")
@@ -90,7 +81,7 @@ class VisaController(BaseController):
                     address, open_timeout=self.visa_timeout_ms
                 )
             except Exception as e:
-                logging.warning(f"Could not open device: {address} ({e})")
+                logging.warning(f"Could not open device: `{address}` ({e})")
                 continue
 
             # pyvisa also supports RegisterBasedResources - but these are controlled differently
@@ -103,71 +94,116 @@ class VisaController(BaseController):
 
             try:
                 logging.debug(f"Trying to indentify {address}")
-                ident = resource.query("*IDN?")
+                ident = resource.query("*IDN?").strip()
                 logging.debug(f"{address} identified as {ident}")
             except Exception as e:
                 logging.warning(f"Could not query device: {address} ({e})")
                 continue
 
-            if device.type == DeviceType.K2470:
-                self.devices[device.name] = K2470Device(
-                    resource, ident, self.lock, device
-                )
+            logging.info(f"Connected to device, identified as `{ident}`")
 
-        return ParameterTree(
+            try:
+                match device.type:
+                    case DeviceType.K2470:
+                        device_obj = K2470Device(resource, ident)
+                        await device_obj.set_default_values()
+                        self.devices[device.name] = device_obj
+
+                        configured += 1
+            except DriverError as e:
+                logging.error(f"Could not set default values for `{ident}`:\n{e}")
+
+        logging.info(f"{configured} devices initialised")
+
+        self.param_tree = await AsyncParameterTree(
             {
-                "poll_interval": (lambda: self.poll_interval, self.set_poll_interval),
                 "num_devices": (lambda: len(self.devices), None),
                 "devices": {
-                    name: device.as_tree() for name, device in self.devices.items()
+                    name: device.get_param_tree()
+                    for name, device in self.devices.items()
                 },
             }
         )
 
-    def set_poll_interval(self, value: float):
-        self.poll_interval = value
+    async def initialize(self, adapters):
+        await super().initialize(adapters)
 
-    def get(self, path, with_metadata=False) -> Any:
-        return self.param_tree.get(path, with_metadata)
+        for _, device in self.devices.items():
+            self._start_background_task(device.update_task())
 
-    def set(self, path, data):
+    def _start_background_task(self, coroutine):
+        task = asyncio.create_task(coroutine)
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
+        return task
+
+    async def get(self, path, with_metadata=False) -> Any:
         try:
-            self.param_tree.set(path, data)
+            return await self.param_tree.get(path, with_metadata)
         except ParameterTreeError as e:
             raise ParameterTreeError(e)
 
-    def cleanup(self):
-        self.stop_background_task()
+    async def set(self, path, data):
+        try:
+            await self.param_tree.set(path, data)
+        except ParameterTreeError as e:
+            raise ParameterTreeError(e)
+        except DriverError as e:
+            logging.error(f"Failed to set `{data}` at `{path}`:\n{e}")
+            return
+
+        # TODO: Ideally, this should only refresh the device that was 'set'
         for name, device in self.devices.items():
             try:
-                device.cleanup()
-            except Exception:
-                logging.exception("Error cleaning up device %s", name)
-        self.executor.shutdown(wait=False, cancel_futures=True)
-        try:
-            self.resource_manager.close()
-        except Exception:
-            logging.exception("Error closing VISA resource manager")
+                await device.refresh_param_tree()
+            except DriverError as e:
+                logging.error(
+                    f"Failed to refresh parameter tree for `{name}` after setting `{path}`:\n{e}"
+                )
 
-    def initialize(self, adapters):
-        pass
+    async def cleanup(self):
+        for task in self._background_tasks:
+            task.cancel()
 
-    def start_background_task(self):
-        self._stop_event.clear()
-        self._background_future = self.background_task()
+        await asyncio.gather(
+            *self._background_tasks,
+            return_exceptions=True,
+        )
 
-    def stop_background_task(self):
-        self._stop_event.set()
+        self._background_tasks.clear()
 
-    @run_on_executor
-    def background_task(self):
-        logging.info("Background task running")
-        while not self._stop_event.wait(self.poll_interval):
-            for name, device in self.devices.items():
-                if self._stop_event.is_set():
-                    break
-                try:
-                    device.update()
-                except Exception:
-                    logging.exception("Error updating device %s", name)
-        logging.info("Background task stopped")
+    # def cleanup(self):
+    #     # self.stop_background_task()
+    #     # for name, device in self.devices.items():
+    #     #     try:
+    #     #         device.cleanup()
+    #     #     except Exception:
+    #     #         logging.exception("Error cleaning up device %s", name)
+    #     self.executor.shutdown(wait=False, cancel_futures=True)
+    #     try:
+    #         self.resource_manager.close()
+    #     except Exception:
+    #         logging.exception("Error closing VISA resource manager")
+    #
+    # def initialize(self, adapters):
+    #     pass
+
+    # def start_background_task(self):
+    #     self._stop_event.clear()
+    #     self._background_future = self.background_task()
+    #
+    # def stop_background_task(self):
+    #     self._stop_event.set()
+
+    # @run_on_executor
+    # def background_task(self):
+    #     logging.info("Background task running")
+    #     while not self._stop_event.wait(self.poll_interval):
+    #         for name, device in self.devices.items():
+    #             if self._stop_event.is_set():
+    #                 break
+    #             try:
+    #                 device.update()
+    #             except Exception:
+    #                 logging.exception("Error updating device %s", name)
+    #     logging.info("Background task stopped")

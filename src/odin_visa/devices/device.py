@@ -1,22 +1,16 @@
+from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 from abc import ABC, abstractmethod
 
-from odin_visa.tree import ParameterTreeMixin
-from odin_visa.types import StrEnum
 
-
-class Device(ParameterTreeMixin, ABC):
+class Device(ABC):
     @abstractmethod
-    def query(self, cmd: str) -> str | None:
+    def get_param_tree(self) -> AsyncParameterTree:
         pass
 
     @abstractmethod
-    def write(self, cmd: str) -> None:
+    async def refresh_param_tree(self):
         pass
 
     @abstractmethod
-    def update(self) -> None:
-        pass
-
-    @abstractmethod
-    def cleanup(self) -> None:
+    async def update_task(self):
         pass

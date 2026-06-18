@@ -1,25 +1,11 @@
+from dataclasses import dataclass
+from dataclass_wizard import JSONSerializable
 from enum import IntEnum
 from time import mktime, strptime
 from typing import List, TypedDict
 
 from odin_visa.tree import Leaf, ParameterTreeMixin
 from odin_visa.types import parse_int
-
-
-# TODO: Is the event type a bitfield?
-#        - Can there be an event that is both ERROR and WARNING?
-class EventType(IntEnum):
-    ERROR = 1
-    WARNING = 2
-    INFORMATION = 4
-
-
-class Event(TypedDict):
-    code: int
-    message: str
-    type: EventType
-    timestamp_ms: int
-    context: str
 
 
 class EventLog(ParameterTreeMixin):
@@ -34,13 +20,11 @@ class EventLog(ParameterTreeMixin):
         split = event_str.split(";")
         code_message = split[0].split(",")
         event = Event(
-            {
-                "code": parse_int(code_message[0], 0),
-                "message": code_message[1],
-                "type": EventType(int(split[1])),
-                "timestamp_ms": self._parse_datetime(split[2]),
-                "context": context,
-            }
+            code=parse_int(code_message[0], 0),
+            message=code_message[1],
+            kind=EventType(int(split[1])),
+            timestamp_ms=self._parse_datetime(split[2]),
+            context=context,
         )
         self.count += 1
         self.log.append(event)
