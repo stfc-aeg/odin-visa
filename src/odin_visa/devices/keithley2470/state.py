@@ -1,15 +1,16 @@
-from pickle import TRUE
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
+
+import pandas as pd
+
 from odin_visa.devices.device_config import DeviceType
 from odin_visa.devices.keithley2470.types import (
-    Event,
     AveragingType,
+    Event,
     SenseFunction,
     SourceFunction,
     TriggerModelStatus,
 )
-import pandas as pd
-from dataclasses import dataclass, field
 
 
 @dataclass
@@ -39,9 +40,9 @@ class SaveFileConfigState:
 
 @dataclass
 class ConfigState:
-    source: SourceConfigState = SourceConfigState()
-    sense: SenseConfigState = SenseConfigState()
-    savefile: SaveFileConfigState = SaveFileConfigState()
+    source: SourceConfigState = field(default_factory=SourceConfigState)
+    sense: SenseConfigState = field(default_factory=SenseConfigState)
+    savefile: SaveFileConfigState = field(default_factory=SaveFileConfigState)
 
 
 @dataclass
@@ -70,7 +71,7 @@ class K2470State:
     ident: str
     address: str
     poll_freq: float = 1
-    config: ConfigState = ConfigState()
-    event_log: EventLogState = EventLogState()
-    status: StatusState = StatusState()
-    buffers: BufferState = BufferState()
+    config: ConfigState = field(default_factory=ConfigState)
+    event_log: EventLogState = field(default_factory=EventLogState)
+    status: StatusState = field(default_factory=StatusState)
+    buffers: BufferState = field(default_factory=BufferState)

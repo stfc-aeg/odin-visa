@@ -1,5 +1,10 @@
-from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 from abc import ABC, abstractmethod
+
+from odin_control.adapters.async_parameter_tree import AsyncParameterTree
+
+
+class DeviceError(Exception):
+    """Base exception for any error coming from the device."""
 
 
 class Device(ABC):
@@ -8,9 +13,9 @@ class Device(ABC):
         pass
 
     @abstractmethod
-    async def refresh_param_tree(self):
+    async def refresh_param_tree(self) -> None:
         pass
 
     @abstractmethod
-    async def update_task(self):
+    async def update_task(self) -> None:
         pass

@@ -1,64 +1,59 @@
-from asyncio import Transport
-import logging
+import structlog
+
+from odin_visa.devices.keithley2470.transport import K2470Transport
+from odin_visa.devices.keithley2470.types import SourceFunction
 from odin_visa.util.scpi_parse import parse_enum, parse_float
-from .error import DriverError
-from ..transport import K2470Transport, TransportError
-from ..types import SourceFunction
+
+from .error import InvalidResponseError
+
+logger = structlog.get_logger()
 
 
 class SourceDriver:
-    def __init__(self, transport: K2470Transport):
+    def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
-    async def set_function(self, function: SourceFunction):
-        logging.debug(f"source.set_function({function})")
-        try:
-            await self.transport.write(f"SOUR:FUNC {function}")
-        except TransportError as e:
-            raise DriverError(f"Failed to set `{function}` as source function") from e
+    async def set_function(self, function: SourceFunction) -> None:
+        logger.debug("source.set_function(%s)", function)
+        await self.transport.write(f"SOUR:FUNC {function}")
 
     async def get_function(self) -> SourceFunction:
-        logging.debug("source.get_function()")
+        logger.debug("source.get_function()")
+        response = await self.transport.query("SOUR:FUNC?")
         try:
-            return parse_enum(await self.transport.query("SOUR:FUNC?"), SourceFunction)
-        except (TransportError, ValueError) as e:
-            raise DriverError("Failed to get source function") from e
+            return parse_enum(response, SourceFunction)
+        except ValueError as e:
+            raise InvalidResponseError(response) from e
 
-    async def set_level(self, level: float):
-        logging.debug(f"source.set_level({level})")
-        try:
-            function = await self.get_function()
-            await self.transport.write(f"SOUR:{function} {level}")
-        except (DriverError, TransportError, ValueError) as e:
-            raise DriverError(f"Failed to set `{level}` as source level") from e
+    async def set_level(self, level: float) -> None:
+        logger.debug("source.set_level(%f)", level)
+        function = await self.get_function()
+        await self.transport.write(f"SOUR:{function} {level}")
 
     async def get_level(self, function: SourceFunction) -> float:
-        logging.debug("source.get_level()")
+        logger.debug("source.get_level()")
+        response = await self.transport.query(f"SOUR:{function}?")
         try:
-            return parse_float(await self.transport.query(f"SOUR:{function}?"))
-        except (TransportError, ValueError) as e:
-            raise DriverError("Failed to get source level") from e
+            return parse_float(response)
+        except ValueError as e:
+            raise InvalidResponseError(response) from e
 
-    async def set_limit(self, limit: float):
-        logging.debug(f"source.set_limit({limit})")
-        try:
-            function = await self.get_function()
-            await self.transport.write(
-                f"SOUR:{function}:{self._limiting_function(function)}LIM {limit}"
-            )
-        except (TransportError, ValueError, DriverError) as e:
-            raise DriverError(f"Failed to set `{limit}` as source limit") from e
+    async def set_limit(self, limit: float) -> None:
+        logger.debug("source.set_limit(%f)", limit)
+        function = await self.get_function()
+        await self.transport.write(
+            f"SOUR:{function}:{self._limiting_function(function)}LIM {limit}"
+        )
 
     async def get_limit(self, function: SourceFunction) -> float:
-        logging.debug("source.get_limit()")
+        logger.debug("source.get_limit()")
+        response = await self.transport.query(
+            f"SOUR:{function}:{self._limiting_function(function)}LIM?"
+        )
         try:
-            return parse_float(
-                await self.transport.query(
-                    f"SOUR:{function}:{self._limiting_function(function)}LIM?"
-                )
-            )
-        except (TransportError, ValueError) as e:
-            raise DriverError("Failed to get source limit") from e
+            return parse_float(response)
+        except ValueError as e:
+            raise InvalidResponseError(response) from e
 
     @staticmethod
     def _limiting_function(function: SourceFunction) -> str:

@@ -1,4 +1,5 @@
 from odin_control.adapters.async_adapter import AsyncApiAdapter
+
 from odin_visa.controller import VisaController
 
 

@@ -1,5 +1,6 @@
+from typing import TypeVar
+
 from odin_visa.types import StrEnum
-from typing import TypeVar, Type
 
 
 def parse_int(raw: str) -> int:
@@ -16,25 +17,25 @@ def parse_bool(raw: str) -> bool:
         return True
     if normalised in ("0", "OFF"):
         return False
-    raise ValueError(f"value `{raw}` is not bool-like")
+
+    msg = f"value `{raw}` is not bool-like"
+    raise ValueError(msg)
 
 
 def parse_float_list(raw: str) -> list[float]:
     values: list[float] = []
-    for i, part in enumerate(raw.split(",")):
-        try:
-            parse_float(part.strip())
-        except ValueError as e:
-            raise ValueError(f"Could not parse element {i} of {raw}: {e}")
+    for part in raw.split(","):
+        parse_float(part.strip())
     return values
 
 
 E = TypeVar("E", bound=StrEnum)
 
 
-def parse_enum(raw: str, enum_cls: Type[E]) -> E:
+def parse_enum(raw: str, enum_cls: type[E]) -> E:
     normalised = raw.strip().upper()
     for member in enum_cls:
         if member.value.upper() == normalised:
             return member
-    raise ValueError(f"Could not parse {raw} into {enum_cls}")
+    msg = f"Could not parse '{raw}' into {enum_cls}"
+    raise ValueError(msg)

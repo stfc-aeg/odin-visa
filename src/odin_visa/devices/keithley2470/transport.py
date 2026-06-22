@@ -1,16 +1,27 @@
-from pyvisa import VisaIOError
 import asyncio
 from timeit import default_timer
-import logging
+
+import structlog
+from pyvisa import VisaIOError
 from pyvisa.resources import MessageBasedResource
 
+from odin_visa.devices.device import DeviceError
 
-class TransportError(Exception):
-    pass
+logger = structlog.get_logger()
+
+
+class DeviceWriteError(DeviceError):
+    def __init__(self, cmd: str) -> None:
+        super().__init__(f"Failed to write `{cmd}` to device")
+
+
+class DeviceReadError(DeviceError):
+    def __init__(self) -> None:
+        super().__init__("Failed to read response from device")
 
 
 class K2470Transport:
-    def __init__(self, device: MessageBasedResource):
+    def __init__(self, device: MessageBasedResource) -> None:
         self.device = device
         self._lock = asyncio.Lock()
 
@@ -22,32 +33,36 @@ class K2470Transport:
             try:
                 await asyncio.to_thread(self.device.write, cmd)
             except VisaIOError as e:
-                raise TransportError(
-                    f"Failed to write `{cmd}` to `{self.device._resource_name}`"
-                ) from e
+                raise DeviceWriteError(cmd) from e
 
             end = default_timer()
-            logging.debug("write(`%s`) took %fus", cmd, (end - start) * 1_000_000)
+            duration = (end - start) * 1_000_000
+            logger.debug("device write", cmd=cmd, duration_us=duration)
 
     async def query(self, cmd: str) -> str:
         async with self._lock:
             start = default_timer()
 
             # TODO: Device error handling?
-            try:
-                msg = await asyncio.to_thread(self.device.query, cmd)
-            except VisaIOError as e:
-                raise TransportError(
-                    f"Failed to send query `{cmd}` to `{self.device._resource_name}`"
-                ) from e
-
-            msg = msg.strip()
+            msg = await asyncio.to_thread(self._query_blocking, cmd)
 
             end = default_timer()
-            logging.debug(
-                "query(`%s`) took %fus, returning `%s`",
-                cmd,
-                (end - start) * 1_000_000,
-                msg,
+            duration = (end - start) * 1_000_000
+            logger.debug(
+                "device query",
+                cmd=cmd,
+                response=msg,
+                duration_us=duration,
             )
             return msg
+
+    def _query_blocking(self, cmd: str) -> str:
+        try:
+            self.device.write(cmd)
+        except VisaIOError as e:
+            raise DeviceWriteError(cmd) from e
+
+        try:
+            return self.device.read().strip()
+        except VisaIOError as e:
+            raise DeviceReadError from e
