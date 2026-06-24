@@ -1,8 +1,8 @@
-from pyvisa import VisaIOError
-from typing import TypeAlias
 from dataclasses import dataclass
-from dataclass_wizard import JSONSerializable
 from enum import IntEnum
+
+from dataclass_wizard import JSONSerializable
+
 from odin_visa.types import StrEnum
 
 
