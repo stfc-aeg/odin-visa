@@ -19,3 +19,7 @@ class Device(ABC):
     @abstractmethod
     async def update_task(self) -> None:
         pass
+
+    @abstractmethod
+    async def cleanup(self) -> None:
+        pass

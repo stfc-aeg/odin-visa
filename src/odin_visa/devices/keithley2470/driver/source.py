@@ -1,3 +1,4 @@
+from odin_visa.util.instrument import instrument
 import structlog
 
 from odin_visa.devices.keithley2470.transport import K2470Transport
@@ -13,40 +14,40 @@ class SourceDriver:
     def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
+    @instrument(logger)
     async def set_function(self, function: SourceFunction) -> None:
-        logger.debug("source.set_function(%s)", function)
         await self.transport.write(f"SOUR:FUNC {function}")
 
+    @instrument(logger)
     async def get_function(self) -> SourceFunction:
-        logger.debug("source.get_function()")
         response = await self.transport.query("SOUR:FUNC?")
         try:
             return parse_enum(response, SourceFunction)
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
+    @instrument(logger)
     async def set_level(self, level: float) -> None:
-        logger.debug("source.set_level(%f)", level)
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function} {level}")
 
+    @instrument(logger)
     async def get_level(self, function: SourceFunction) -> float:
-        logger.debug("source.get_level()")
         response = await self.transport.query(f"SOUR:{function}?")
         try:
             return parse_float(response)
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
+    @instrument(logger)
     async def set_limit(self, limit: float) -> None:
-        logger.debug("source.set_limit(%f)", limit)
         function = await self.get_function()
         await self.transport.write(
             f"SOUR:{function}:{self._limiting_function(function)}LIM {limit}"
         )
 
+    @instrument(logger)
     async def get_limit(self, function: SourceFunction) -> float:
-        logger.debug("source.get_limit()")
         response = await self.transport.query(
             f"SOUR:{function}:{self._limiting_function(function)}LIM?"
         )

@@ -1,11 +1,12 @@
 import asyncio
-from timeit import default_timer
+from collections.abc import Sequence
 
 import structlog
 from pyvisa import VisaIOError
 from pyvisa.resources import MessageBasedResource
 
 from odin_visa.devices.device import DeviceError
+from odin_visa.util.instrument import instrument, instrument_async
 
 logger = structlog.get_logger()
 
@@ -25,36 +26,20 @@ class K2470Transport:
         self.device = device
         self._lock = asyncio.Lock()
 
+    @instrument(logger)
     async def write(self, cmd: str) -> None:
         async with self._lock:
-            start = default_timer()
-
             # TODO: Device error handling?
             try:
                 await asyncio.to_thread(self.device.write, cmd)
             except VisaIOError as e:
                 raise DeviceWriteError(cmd) from e
 
-            end = default_timer()
-            duration = (end - start) * 1_000_000
-            logger.debug("device write", cmd=cmd, duration_us=duration)
-
+    @instrument_async(logger)
     async def query(self, cmd: str) -> str:
         async with self._lock:
-            start = default_timer()
-
             # TODO: Device error handling?
-            msg = await asyncio.to_thread(self._query_blocking, cmd)
-
-            end = default_timer()
-            duration = (end - start) * 1_000_000
-            logger.debug(
-                "device query",
-                cmd=cmd,
-                response=msg,
-                duration_us=duration,
-            )
-            return msg
+            return await asyncio.to_thread(self._query_blocking, cmd)
 
     def _query_blocking(self, cmd: str) -> str:
         try:
@@ -65,4 +50,20 @@ class K2470Transport:
         try:
             return self.device.read().strip()
         except VisaIOError as e:
+            raise DeviceReadError from e
+
+    @instrument_async(logger)
+    async def query_bytes(self, cmd: str, data_points: int) -> Sequence[float]:
+        async with self._lock:
+            return await asyncio.to_thread(self._query_bytes_blocking, cmd, data_points)
+
+    def _query_bytes_blocking(self, cmd: str, data_points: int) -> Sequence[float]:
+        try:
+            self.device.write(cmd)
+        except VisaIOError as e:
+            raise DeviceWriteError(cmd) from e
+
+        try:
+            return self.device.read_binary_values(datatype="d", data_points=data_points)
+        except (VisaIOError, ValueError) as e:
             raise DeviceReadError from e
