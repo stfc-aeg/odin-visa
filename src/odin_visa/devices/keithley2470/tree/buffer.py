@@ -46,7 +46,7 @@ class BufferTree:
             return []
 
         start = pd.to_timedelta(self.state.start_from, unit="us")
-        df = self.state.buffer[start:]
+        df = self.state.buffer.loc[start:]
         if bin_size is not None and resample_method is not None:
             df = df.ffill().resample(bin_size)
         match resample_method:

@@ -1,3 +1,4 @@
+from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
@@ -36,6 +37,10 @@ class SenseConfigState:
 class SaveFileConfigState:
     file: str = f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')}.hdf5"
     subfolder: str = ""
+    base_folder: str = ""
+
+    def path(self) -> Path:
+        return Path(self.base_folder).joinpath(self.subfolder).joinpath(self.file)
 
 
 @dataclass

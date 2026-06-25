@@ -32,6 +32,7 @@ class K2470Device(Device):
         logger.info("Initialising K2470Device", ident=ident, address=address)
         self.config = config
         self.state = K2470State(kind=DeviceType.K2470, ident=ident, address=address)
+        self.state.config.savefile.base_folder = self.config.savefile_config.data_folder
         self.transport = K2470Transport(device)
         self.driver = K2470Driver(self.transport)
         self.tree = K2470Tree(self.state, self.driver, self.config)

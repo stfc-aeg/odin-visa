@@ -1,8 +1,11 @@
+import numpy as np
 import pandas as pd
 import structlog
 
 from odin_visa.devices.device_config import DeviceConfig
 from odin_visa.devices.keithley2470.driver import K2470Driver
+from odin_visa.devices.keithley2470.driver.types import ITEM_DTYPE
+from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
 from odin_visa.devices.keithley2470.state import K2470State
 from odin_visa.util.instrument import instrument_async
 
@@ -17,9 +20,12 @@ class Acquisition:
         self.state = state
         self.config = config
 
+        self.file_writer = FileWriter(state)
+
         self.is_acquiring = False
         self.current_index = 1
         self.iteration = 0
+        self.last_saved_index = 0
 
     @instrument_async(logger)
     async def update(self) -> None:
@@ -47,6 +53,26 @@ class Acquisition:
         )
         self.current_index = new_index
 
+        if self.iteration % 5 == 4:
+            await self.save_chunk_to_disk()
+
+    async def save_chunk_to_disk(self) -> None:
+        logger.info("Saving chunk to disk")
+        buffer = self.state.buffers.buffer
+        if buffer is None:
+            logger.warning("Buffer is none! Is an acqusition running?")
+            return
+
+        df = buffer.iloc[self.last_saved_index :]
+        out = np.empty(len(df), dtype=ITEM_DTYPE)
+
+        out["timestamp"] = df.index.asi8 // 1_000  # datetime ns -> microseconds
+        out["reading"] = df["reading"].to_numpy()
+        out["source"] = df["source"].to_numpy()
+
+        self.file_writer.write_chunk(out)
+        self.last_saved_index = len(buffer) - 1
+
     @instrument_async(logger)
     async def start_acquisition(self) -> None:
         logger.info("Starting acqusition")
@@ -56,6 +82,7 @@ class Acquisition:
 
         self.state.buffers.buffer = None
         self.state.buffers.start_from = 0
+        self.file_writer.create_file()
 
         await self.driver.trigger_model.load_loop_until_trigger_model(
             self.config.device_buffer.name
