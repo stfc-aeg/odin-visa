@@ -33,14 +33,22 @@ class SourceConfigState:
 
 @dataclass
 class SenseConfigState:
-    function: SenseFunction = SenseFunction.CURRENT
-    auto_range: bool = True
-    count: int = 1
-    nplcs: float = 0.1
-    range: float = 0.1
-    averaging_enable: bool = False
-    averaging_type: AveragingType = AveragingType.REPEATING
     averaging_count: int = 1
+    averaging_enable: bool = False
+    averaging_type: AveragingType = AveragingType.REPEAT
+    auto_zero: bool = False
+    nplcs: float = 0.1
+    offset_compensation: bool = False
+    auto_range: bool = False
+    auto_range_lower_limit: float = 10e-9
+    auto_range_rebound: bool = False
+    auto_range_upper_limit: float = 0.1
+    range: float = 10e-9
+    relative_offset_level: float = 0
+    relative_offset: bool = False
+    remote_sensing: bool = False
+    count: int = 1
+    function: SenseFunction = SenseFunction.CURRENT
 
 
 @dataclass

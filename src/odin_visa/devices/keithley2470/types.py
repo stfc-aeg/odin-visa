@@ -24,20 +24,18 @@ class Event(JSONSerializable):
 
 
 class SenseFunction(StrEnum):
-    VOLTAGE = "VOLT"
-    CURRENT = "CURR"
-    INVALID = "INVALID"
+    VOLTAGE = "VOLTAGE"
+    CURRENT = "CURRENT"
 
 
 class AveragingType(StrEnum):
-    REPEATING = "REP"
-    MOVING = "MOV"
-    INVALID = "INVALID"
+    REPEAT = "REPEAT"
+    MOVING = "MOVING"
 
 
 class SourceFunction(StrEnum):
-    VOLTAGE = "VOLT"
-    CURRENT = "CURR"
+    VOLTAGE = "VOLTAGE"
+    CURRENT = "CURRENT"
 
 
 class ProtectionLevel(StrEnum):

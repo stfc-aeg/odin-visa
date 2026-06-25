@@ -51,19 +51,37 @@ export interface SaveFileConfig extends ParamNode {
   full_path: string,
 }
 
-export interface SenseConfig extends ParamNode {
-  auto_range: boolean;
-  averaging: AveragingConfig;
-  count: number;
-  function: string;
-  nplcs: number;
-  range: number;
-}
+export const AVERAGING_MODES = [
+  "REPEAT",
+  "MOVING"
+] as const;
 
-export interface AveragingConfig extends ParamNode {
+export type AveragingFilter = (typeof AVERAGING_MODES)[number];
+
+export const SENSE_FUNCTIONS = [
+  "VOLTAGE",
+  "CURRENT",
+] as const;
+
+export type SenseFunction = (typeof SENSE_FUNCTIONS)[number];
+
+export interface SenseConfig extends ParamNode {
+  averaging_count: number;
+  averaging: boolean;
+  averaging_filter: AveragingFilter;
+  auto_zero: boolean;
+  nplcs: number;
+  offset_compensation: boolean;
+  auto_range: boolean;
+  auto_range_lower_limit: number;
+  auto_range_rebound: boolean;
+  auto_range_upper_limit: number;
+  range: number;
+  relative_offset_level: number
+  relative_offset: boolean;
+  remote_sensing: boolean;
   count: number;
-  enable: false;
-  type: string;
+  function: SenseFunction;
 }
 
 export const PROTECTION_MODES = [
@@ -78,6 +96,13 @@ export const PROTECTION_MODES = [
 ] as const;
 
 export type ProtectionMode = (typeof PROTECTION_MODES)[number];
+
+export const SOURCE_FUNCTIONS = [
+  "VOLTAGE",
+  "CURRENT",
+] as const;
+
+export type SourceFunction = (typeof SOURCE_FUNCTIONS)[number];
 
 export interface SourceConfig extends ParamNode {
   function: string;

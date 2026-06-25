@@ -1,8 +1,8 @@
-import { PROTECTION_MODES } from "@/lib/ParamTreeType";
+import { PROTECTION_MODES, SOURCE_FUNCTIONS } from "@/lib/ParamTreeType";
 import type { ControlEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
 import { EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
-import { Dropdown, DropdownItem, Form, InputGroup } from "react-bootstrap";
+import { DropdownItem, InputGroup } from "react-bootstrap";
 
 export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   const source = control_endpoint.data.source;
@@ -33,8 +33,9 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
                   Source Function
                 </InputGroup.Text>
                 <EndpointDropdown endpoint={control_endpoint} fullpath="source/function">
-                  <DropdownItem eventKey={"VOLT"}>Voltage</DropdownItem>
-                  <DropdownItem eventKey={"CURR"}>Current</DropdownItem>
+                  {SOURCE_FUNCTIONS.map((mode) => (
+                    <DropdownItem key={mode} eventKey={mode}>{mode}</DropdownItem>
+                  ))}
                 </EndpointDropdown>
               </InputGroup>
             </div>
@@ -61,7 +62,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
                   fullpath="source/protection"
                 >
                   {PROTECTION_MODES.map((mode) => (
-                    <DropdownItem eventKey={mode}>{mode}</DropdownItem>
+                    <DropdownItem key={mode} eventKey={mode}>{mode}</DropdownItem>
                   ))}
                 </EndpointDropdown>
               </InputGroup>

@@ -32,10 +32,15 @@ def parse_float_list(raw: str) -> list[float]:
 E = TypeVar("E", bound=StrEnum)
 
 
-def parse_enum(raw: str, enum_cls: type[E]) -> E:
+def parse_enum(raw: str, enum_cls: type[E], *, match_start: bool = False) -> E:
     normalised = raw.strip().upper()
     for member in enum_cls:
-        if member.value.upper() == normalised:
+        predicate = (
+            member.value.upper().startswith(normalised)
+            if match_start
+            else member.value.upper() == normalised
+        )
+        if predicate:
             return member
     msg = f"Could not parse '{raw}' into {enum_cls}"
     raise ValueError(msg)

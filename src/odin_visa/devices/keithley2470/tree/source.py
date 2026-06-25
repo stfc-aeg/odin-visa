@@ -37,7 +37,7 @@ class SourceTree:
                 ),
                 "limit_tripped": (
                     lambda: self.state.limit_tripped,
-                    None,
+                    lambda: None,
                 ),
                 "function": (
                     lambda: str(self.state.function),

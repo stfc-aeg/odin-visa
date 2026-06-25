@@ -107,7 +107,7 @@ class SourceDriver:
     async def get_function(self) -> SourceFunction:
         response = await self.transport.query("SOUR:FUNC?")
         try:
-            return parse_enum(response, SourceFunction)
+            return parse_enum(response, SourceFunction, match_start=True)
         except ValueError as e:
             raise InvalidResponseError(response) from e
 

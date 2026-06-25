@@ -5,6 +5,7 @@ import { SourceSettingsGroup } from "./settings/SourceSettingsGroup";
 import type { Buffers, Config } from "@/lib/ParamTreeType";
 import { BufferPoll } from "@/lib/bufferPoll";
 import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";
+import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
   const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 1000);
@@ -59,6 +60,9 @@ export const Keithley2470 = ({ name }: { name: string }) => {
             <div className="row row-cols-1 gy-3">
               <div className="col">
                 <SourceSettingsGroup control_endpoint={control_endpoint} />
+              </div>
+              <div className="col">
+                <SenseSettingsGroup control_endpoint={control_endpoint} />
               </div>
               <div className="col">
                 <SaveFileSettingsGroup control_endpoint={control_endpoint} />

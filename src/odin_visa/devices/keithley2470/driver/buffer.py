@@ -1,5 +1,3 @@
-from typing import cast
-
 import numpy as np
 import pandas as pd
 import structlog
