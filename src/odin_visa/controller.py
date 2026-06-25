@@ -79,7 +79,6 @@ class VisaController(AsyncBaseController):
 
         self.devices: dict[str, Device] = {}
 
-        self.poll_interval = 1.0
         self.resource_manager = pyvisa.ResourceManager()
 
         self._initialise = self.initialise_devices()

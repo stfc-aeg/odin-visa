@@ -1,6 +1,6 @@
-from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pandas as pd
 
@@ -8,6 +8,7 @@ from odin_visa.devices.device_config import DeviceType
 from odin_visa.devices.keithley2470.types import (
     AveragingType,
     Event,
+    ProtectionLevel,
     SenseFunction,
     SourceFunction,
     TriggerModelStatus,
@@ -16,9 +17,18 @@ from odin_visa.devices.keithley2470.types import (
 
 @dataclass
 class SourceConfigState:
-    function: SourceFunction = SourceFunction.VOLTAGE
+    delay: float = 0.0
+    auto_delay: bool = False
+    high_capacitance: bool = False
     level: float = 0.0
     limit: float = 0.1
+    limit_tripped: bool = False
+    function: SourceFunction = SourceFunction.VOLTAGE
+    protection: ProtectionLevel = ProtectionLevel.PROT20
+    protection_tripped: bool = False
+    range: float = 2.0
+    auto_range: bool = False
+    read_back: bool = True
 
 
 @dataclass
@@ -75,7 +85,7 @@ class K2470State:
     kind: DeviceType
     ident: str
     address: str
-    poll_freq: float = 1
+    poll_freq: float = 1.0
     config: ConfigState = field(default_factory=ConfigState)
     event_log: EventLogState = field(default_factory=EventLogState)
     status: StatusState = field(default_factory=StatusState)

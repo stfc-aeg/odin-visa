@@ -40,6 +40,17 @@ class SourceFunction(StrEnum):
     CURRENT = "CURR"
 
 
+class ProtectionLevel(StrEnum):
+    PROT20 = "PROT20"
+    PROT40 = "PROT40"
+    PROT100 = "PROT100"
+    PROT200 = "PROT200"
+    PROT300 = "PROT300"
+    PROT400 = "PROT400"
+    PROT500 = "PROT500"
+    NONE = "NONE"
+
+
 class TriggerModelStatus(StrEnum):
     IDLE = "IDLE"
     RUNNING = "RUNNING"

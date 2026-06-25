@@ -1,7 +1,8 @@
+import { PROTECTION_MODES } from "@/lib/ParamTreeType";
 import type { ControlEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
-import { EndpointDropdown, EndpointRangeInput } from "@dssg/odin-react";
-import { DropdownItem } from "react-bootstrap";
+import { EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
+import { Dropdown, DropdownItem, Form, InputGroup } from "react-bootstrap";
 
 export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   const source = control_endpoint.data.source;
@@ -23,12 +24,56 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
 
   return (
     <SettingsGroup title="Source Settings">
-      <div className="row row-cols-1 gy-2">
+      <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
-          <EndpointDropdown endpoint={control_endpoint} fullpath="source/function">
-            <DropdownItem eventKey={"VOLT"}>Voltage</DropdownItem>
-            <DropdownItem eventKey={"CURR"}>Current</DropdownItem>
-          </EndpointDropdown>
+          <div className="row align-items-center gx-2">
+            <div className="col">
+              <InputGroup>
+                <InputGroup.Text>
+                  Source Function
+                </InputGroup.Text>
+                <EndpointDropdown endpoint={control_endpoint} fullpath="source/function">
+                  <DropdownItem eventKey={"VOLT"}>Voltage</DropdownItem>
+                  <DropdownItem eventKey={"CURR"}>Current</DropdownItem>
+                </EndpointDropdown>
+              </InputGroup>
+            </div>
+            <div className="col-auto">
+              <EndpointCheckbox
+                endpoint={control_endpoint}
+                fullpath="source/read_back"
+                label="Source Read Back"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="col">
+          <div className="row align-items-center gx-2">
+            <div className="col">
+              <InputGroup>
+                <InputGroup.Text>
+                  Protection Mode
+                </InputGroup.Text>
+                <EndpointDropdown
+                  id="protection-mode-dropdown"
+                  aria-labelledby="protection-mode-label"
+                  endpoint={control_endpoint}
+                  fullpath="source/protection"
+                >
+                  {PROTECTION_MODES.map((mode) => (
+                    <DropdownItem eventKey={mode}>{mode}</DropdownItem>
+                  ))}
+                </EndpointDropdown>
+              </InputGroup>
+            </div>
+            <div className="col-auto">
+              <EndpointCheckbox
+                endpoint={control_endpoint}
+                fullpath="source/high_capacitance"
+                label="High Capacitance Mode"
+              />
+            </div>
+          </div>
         </div>
         <div className="col">
           <EndpointRangeInput
@@ -47,6 +92,52 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
             ranges={inverseFunctionName === "Voltage" ? voltageRanges : currentRanges}
             title="Limit"
           />
+        </div>
+        <div className="col">
+          <div className="row align-items-center gx-2">
+            <div className="col">
+              <InputGroup>
+                <EndpointRangeInput
+                  endpoint={control_endpoint}
+                  fullpath="source/range"
+                  defaultRange={functionName === "Voltage" ? "V" : "A"}
+                  ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
+                  disabled={control_endpoint.data.source.auto_range}
+                  title="Range"
+                />
+              </InputGroup>
+            </div>
+            <div className="col-auto">
+              <EndpointCheckbox
+                endpoint={control_endpoint}
+                fullpath="source/auto_range"
+                label="Auto"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="col">
+          <div className="row align-items-center gx-2">
+            <div className="col">
+              <InputGroup>
+                <InputGroup.Text>
+                  Delay
+                </InputGroup.Text>
+                <EndpointInput
+                  endpoint={control_endpoint}
+                  fullpath="source/delay"
+                  disabled={control_endpoint.data.source.auto_delay}
+                />
+              </InputGroup>
+            </div>
+            <div className="col-auto">
+              <EndpointCheckbox
+                endpoint={control_endpoint}
+                fullpath="source/auto_delay"
+                label="Auto"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </SettingsGroup>

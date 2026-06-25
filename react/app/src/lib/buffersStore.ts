@@ -20,7 +20,7 @@ interface BufferStore {
 export const useBufferStore = create<BufferStore>((set, get) => ({
   buffers: {},
   cursor: 0,
-  refreshTime: 1000,
+  refreshTime: 10000,
   setRefreshTime: (refreshTime) => set({ refreshTime: refreshTime }),
   appendBuffers: (incoming) => {
     set((state) => {

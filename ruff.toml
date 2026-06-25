@@ -27,6 +27,7 @@ ignore = [
     "ISC001", # Conflicts with formatter
     "TD002",  # Prevents authorless TODO comments, which is annoying
     "TD003",  # Prevents issueless TODO
+    "FBT001", # Prevents boolean args
 ]
 
 [lint.extend-per-file-ignores]

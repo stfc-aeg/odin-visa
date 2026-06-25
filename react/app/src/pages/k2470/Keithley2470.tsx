@@ -2,7 +2,6 @@ import { hasData } from "@/lib/types";
 import { type AdapterEndpoint, useAdapterEndpoint } from "@dssg/odin-react";
 import { useEffect, useRef } from "react";
 import { SourceSettingsGroup } from "./settings/SourceSettingsGroup";
-import { AcquisitionsGroup } from "./acquisitions/AcquisitionsGroup";
 import type { Buffers, Config } from "@/lib/ParamTreeType";
 import { BufferPoll } from "@/lib/bufferPoll";
 import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";

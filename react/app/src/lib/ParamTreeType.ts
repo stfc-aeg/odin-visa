@@ -66,10 +66,30 @@ export interface AveragingConfig extends ParamNode {
   type: string;
 }
 
+export const PROTECTION_MODES = [
+  "PROT20",
+  "PROT40",
+  "PROT100",
+  "PROT200",
+  "PROT300",
+  "PROT400",
+  "PROT500",
+  "NONE",
+] as const;
+
+export type ProtectionMode = (typeof PROTECTION_MODES)[number];
+
 export interface SourceConfig extends ParamNode {
   function: string;
   level: number;
   limit: number;
+  delay: number;
+  auto_delay: boolean;
+  high_capacitance: number;
+  protection: ProtectionMode;
+  range: number;
+  auto_range: boolean;
+  read_back: boolean;
 }
 
 export interface Acquisitions extends ParamNode {
