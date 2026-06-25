@@ -23,17 +23,19 @@ class K2470Tree:
         self.config_tree = ConfigTree(state, driver)
         self.buffer_tree = BufferTree(state, driver, config)
 
+        self.device_tree = AsyncParameterTree(
+            {
+                "ident": (lambda: self.state.ident, None),
+                "address": (lambda: self.state.address, None),
+                "type": (lambda: self.state.kind, None),
+            }
+        )
+
         self.tree = AsyncParameterTree(
             {
                 "config": self.config_tree.tree,
                 "buffers": self.buffer_tree.tree,
-                "ident": (lambda: self.state.ident, None),
-                "address": (lambda: self.state.address, None),
-                "type": (lambda: self.state.kind, None),
-                "poll_freq": (
-                    lambda: self.state.poll_freq,
-                    lambda freq: setattr(self.state, "poll_freq", freq),
-                ),
+                "device": self.device_tree,
             }
         )
 

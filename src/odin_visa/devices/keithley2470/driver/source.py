@@ -1,8 +1,8 @@
-from odin_visa.util.instrument import instrument
 import structlog
 
 from odin_visa.devices.keithley2470.transport import K2470Transport
 from odin_visa.devices.keithley2470.types import SourceFunction
+from odin_visa.util.instrument import instrument
 from odin_visa.util.scpi_parse import parse_enum, parse_float
 
 from .error import InvalidResponseError

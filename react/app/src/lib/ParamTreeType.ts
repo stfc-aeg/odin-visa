@@ -7,18 +7,15 @@ export interface OdinVisaParamTree extends ParamNode {
 }
 
 export interface K2470 extends ParamNode {
-  control: Control,
+  device: DeviceDetails,
   buffers: Buffers,
+  config: Config,
 }
 
-export interface Control extends ParamNode {
+export interface DeviceDetails extends ParamNode {
   type: "K2470";
   ident: string;
   address: string;
-
-  event_log: EventLog;
-  config: Config;
-  acquisitions: Acquisitions;
 }
 
 export interface DeviceTypeMap {
@@ -43,33 +40,15 @@ export interface Event extends ParamNode {
 }
 
 export interface Config extends ParamNode {
-  buffer: BufferConfig;
-  mode: ModeConfig;
   savefile: SaveFileConfig;
-  sense: SenseConfig;
   source: SourceConfig;
-}
-
-export interface BufferConfig extends ParamNode {
-  clear: null;
-  name: string;
-  size: number;
-}
-
-export interface ModeConfig extends ParamNode {
-  loop_until_trigger: LoopUntilTriggerConfig;
-}
-
-export interface LoopUntilTriggerConfig extends ParamNode {
-  delay: number;
-  post_trigger_reading_percentage: number;
+  poll_freq: number;
 }
 
 export interface SaveFileConfig extends ParamNode {
-  dataset_name: string;
-  filename: string;
-  filepath: string;
-  write_period: number;
+  file: string,
+  subfolder: string,
+  full_path: string,
 }
 
 export interface SenseConfig extends ParamNode {
@@ -112,11 +91,7 @@ export interface Status extends ParamNode {
 
 export interface Buffers extends ParamNode {
   buffers: Record<string, BufferItem[]>,
-  start_from: StartFrom,
+  read_from: number,
 }
 
 export type BufferItem = [timestamp: number, source: number, sense: number];
-
-export interface StartFrom extends ParamNode {
-  timestamp: number;
-}

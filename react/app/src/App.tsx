@@ -20,7 +20,7 @@ export const App = () => {
     <QueryClientProvider client={queryClient}>
       <OdinApp title='Odin Visa' navLinks={Object.keys(devices)}>
         {Object.entries(devices).map(([name, device]) => {
-          switch (device.control.type) {
+          switch (device.device.type) {
             case "K2470":
               return <Keithley2470 name={name} />
             default:

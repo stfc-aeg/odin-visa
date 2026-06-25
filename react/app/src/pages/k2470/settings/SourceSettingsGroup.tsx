@@ -4,7 +4,7 @@ import { EndpointDropdown, EndpointRangeInput } from "@dssg/odin-react";
 import { DropdownItem } from "react-bootstrap";
 
 export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
-  const source = control_endpoint.data.config.source;
+  const source = control_endpoint.data.source;
   const functionName = source.function === "VOLT" ? "Voltage" : "Current";
   const inverseFunctionName = source.function === "VOLT" ? "Current" : "Voltage";
 
@@ -23,24 +23,32 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
 
   return (
     <SettingsGroup title="Source Settings">
-      <EndpointDropdown endpoint={control_endpoint} fullpath="config/source/function">
-        <DropdownItem eventKey={"VOLT"}>Voltage</DropdownItem>
-        <DropdownItem eventKey={"CURR"}>Current</DropdownItem>
-      </EndpointDropdown>
-      <EndpointRangeInput
-        endpoint={control_endpoint}
-        fullpath="config/source/level"
-        defaultRange={functionName === "Voltage" ? "V" : "A"}
-        ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
-        title="Level"
-      />
-      <EndpointRangeInput
-        endpoint={control_endpoint}
-        fullpath="config/source/limit"
-        defaultRange={inverseFunctionName === "Voltage" ? "V" : "A"}
-        ranges={inverseFunctionName === "Voltage" ? voltageRanges : currentRanges}
-        title="Limit"
-      />
+      <div className="row row-cols-1 gy-2">
+        <div className="col">
+          <EndpointDropdown endpoint={control_endpoint} fullpath="source/function">
+            <DropdownItem eventKey={"VOLT"}>Voltage</DropdownItem>
+            <DropdownItem eventKey={"CURR"}>Current</DropdownItem>
+          </EndpointDropdown>
+        </div>
+        <div className="col">
+          <EndpointRangeInput
+            endpoint={control_endpoint}
+            fullpath="source/level"
+            defaultRange={functionName === "Voltage" ? "V" : "A"}
+            ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
+            title="Level"
+          />
+        </div>
+        <div className="col">
+          <EndpointRangeInput
+            endpoint={control_endpoint}
+            fullpath="source/limit"
+            defaultRange={inverseFunctionName === "Voltage" ? "V" : "A"}
+            ranges={inverseFunctionName === "Voltage" ? voltageRanges : currentRanges}
+            title="Limit"
+          />
+        </div>
+      </div>
     </SettingsGroup>
   );
 };

@@ -55,12 +55,6 @@ class K2470Device(Device):
         await self.driver.buffer.delete_buffer(name)
         await self.driver.buffer.create_buffer(name, size)
 
-        logger.info("Starting acquisition")
-        try:
-            await self.acquisition.start_acquisition()
-        except Exception:
-            logger.exception("Error")
-
     @override
     @instrument(logger)
     def get_param_tree(self) -> AsyncParameterTree:

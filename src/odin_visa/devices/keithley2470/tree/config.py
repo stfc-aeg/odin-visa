@@ -3,6 +3,7 @@ from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.tree.savefile import SaveFileTree
 from odin_visa.util.instrument import instrument
 
 from .source import SourceTree
@@ -16,9 +17,19 @@ class ConfigTree:
         self.state = state
         self.driver = driver
 
+        self.savefile_tree = SaveFileTree(state)
         self.source_tree = SourceTree(state, driver)
 
-        self.tree = AsyncParameterTree({"source": self.source_tree.tree})
+        self.tree = AsyncParameterTree(
+            {
+                "savefile": self.savefile_tree.tree,
+                "source": self.source_tree.tree,
+                "poll_freq": (
+                    lambda: self.state.poll_freq,
+                    lambda freq: setattr(self.state, "poll_freq", freq),
+                ),
+            }
+        )
 
     @instrument(logger)
     async def set_from_state(self) -> None:

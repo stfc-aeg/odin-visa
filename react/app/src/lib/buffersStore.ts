@@ -82,7 +82,7 @@ export const useBufferStore = create<BufferStore>((set, get) => ({
   },
   fetchBuffers: async (endpoint) => {
     const { cursor, appendBuffers } = get();
-    await endpoint.put({ timestamp: cursor + 1 }, "start_from");
+    await endpoint.put({ value: cursor + 1 }, "read_from");
     const buffers = await endpoint.get<Record<string, BufferItem[]>>("buffers");
     appendBuffers(buffers);
   },

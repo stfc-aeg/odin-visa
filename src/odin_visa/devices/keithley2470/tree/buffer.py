@@ -30,13 +30,13 @@ class BufferTree:
         )
         self.tree = AsyncParameterTree(
             {
-                "read_from": (
-                    lambda: self.state.start_from,
-                    self.state.start_from,
-                ),
+                "read_from": (lambda: self.state.start_from, self._set_start_from),
                 "buffers": buffers,
             }
         )
+
+    def _set_start_from(self, value: int) -> None:
+        self.state.start_from = value
 
     @instrument(logger)
     def _get_buffer(

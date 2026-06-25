@@ -12,7 +12,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               File
             </InputGroup.Text>
-            <EndpointInput title="File" endpoint={control_endpoint} fullpath="config/savefile/file" />
+            <EndpointInput title="File" endpoint={control_endpoint} fullpath="savefile/file" />
           </InputGroup>
         </div>
         <div className="col-sm" style={{ minWidth: "250px" }}>
@@ -20,7 +20,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               Subfolder
             </InputGroup.Text>
-            <EndpointInput title="Folder" endpoint={control_endpoint} fullpath="config/savefile/subfolder" />
+            <EndpointInput title="Folder" endpoint={control_endpoint} fullpath="savefile/subfolder" />
           </InputGroup>
         </div>
       </div>
@@ -30,7 +30,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               Output Path
             </InputGroup.Text>
-            <EndpointInput disabled title="Folder" endpoint={control_endpoint} fullpath="config/savefile/path" />
+            <EndpointInput disabled title="Folder" endpoint={control_endpoint} fullpath="savefile/full_path" />
           </InputGroup>
         </div>
       </div>
