@@ -7,6 +7,7 @@ import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 import { BufferGraph } from "./BufferGraph";
 import { SettingsGroup } from "./settings/SettingsGroup";
 import { OutputSettingsGroup } from "./settings/OutputSettingsGroup";
+import { Card } from "react-bootstrap";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
   const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 1000);
@@ -48,11 +49,18 @@ export const Keithley2470 = ({ name }: { name: string }) => {
         </div>
         <div className="col-lg p-3">
           <SettingsGroup title="Acquisition">
-            <EndpointCheckbox
-              endpoint={control_endpoint}
-              fullpath="acquisition/acquiring"
-              label="Acquiring"
-            />
+            {control_endpoint.data.savefile.exists && !control_endpoint.data.acquisition.acquiring ? (
+              <div className="alert alert-warning">
+                File already exists, cannot start acqusition.
+              </div>
+            ) :
+              (
+                <EndpointCheckbox
+                  endpoint={control_endpoint}
+                  fullpath="acquisition/acquiring"
+                  label="Acquiring"
+                />
+              )}
             <BufferGraph buffer_endpoint={buffers_endpoint} />
           </SettingsGroup>
         </div>

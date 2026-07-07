@@ -11,6 +11,7 @@ class SaveFileTree:
                 "file": (lambda: self.state.file, self._set_file),
                 "subfolder": (lambda: self.state.subfolder, self._set_subfolder),
                 "full_path": (lambda: str(self.state.path()), None),
+                "exists": (lambda: self.state.path().exists(), None),
             }
         )
 

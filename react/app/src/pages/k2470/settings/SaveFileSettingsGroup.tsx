@@ -6,8 +6,8 @@ import { InputGroup } from "react-bootstrap";
 export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   return (
     <SettingsGroup title="Save File Settings">
-      <div className="row gy-2">
-        <div className="col-sm" style={{ minWidth: "250px" }}>
+      <div className="row row-cols-1 gy-2">
+        <div className="col">
           <InputGroup>
             <InputGroup.Text>
               File
@@ -15,7 +15,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <EndpointInput title="File" endpoint={control_endpoint} fullpath="savefile/file" />
           </InputGroup>
         </div>
-        <div className="col-sm" style={{ minWidth: "250px" }}>
+        <div className="col">
           <InputGroup>
             <InputGroup.Text>
               Subfolder
@@ -23,8 +23,6 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <EndpointInput title="Folder" endpoint={control_endpoint} fullpath="savefile/subfolder" />
           </InputGroup>
         </div>
-      </div>
-      <div className="row mt-2">
         <div className="col">
           <InputGroup>
             <InputGroup.Text>

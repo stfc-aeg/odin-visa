@@ -50,6 +50,7 @@ export interface SaveFileConfig extends ParamNode {
   file: string,
   subfolder: string,
   full_path: string,
+  exists: boolean,
 }
 
 export const AVERAGING_MODES = [
