@@ -1,4 +1,3 @@
-from odin_visa.types import StrEnum
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +13,7 @@ from odin_visa.devices.keithley2470.types import (
     SourceFunction,
     TriggerModelStatus,
 )
+from odin_visa.types import StrEnum
 
 
 @dataclass
@@ -67,12 +67,34 @@ class AcquisitionState:
     acquiring: bool = False
 
 
+class SMode(StrEnum):
+    Normal = "NORMAL"
+    HighImpedance = "HIMPEDANCE"
+    Zero = "ZERO"
+    Guard = "GUARD"
+
+
+class Terminal(StrEnum):
+    Front = "FRONT"
+    Rear = "REAR"
+
+
+@dataclass
+class OutputState:
+    smode: SMode = SMode.Normal
+    interlock: bool = False
+    interlock_tripped: bool = False
+    enabled: bool = False
+    terminals: Terminal = Terminal.Front
+
+
 @dataclass
 class ConfigState:
     acquisition: AcquisitionState = field(default_factory=AcquisitionState)
     source: SourceConfigState = field(default_factory=SourceConfigState)
     sense: SenseConfigState = field(default_factory=SenseConfigState)
     savefile: SaveFileConfigState = field(default_factory=SaveFileConfigState)
+    output: OutputState = field(default_factory=OutputState)
 
 
 @dataclass

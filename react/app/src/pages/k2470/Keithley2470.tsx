@@ -6,6 +6,7 @@ import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";
 import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 import { BufferGraph } from "./BufferGraph";
 import { SettingsGroup } from "./settings/SettingsGroup";
+import { OutputSettingsGroup } from "./settings/OutputSettingsGroup";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
   const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 1000);
@@ -37,6 +38,9 @@ export const Keithley2470 = ({ name }: { name: string }) => {
                 <SenseSettingsGroup control_endpoint={control_endpoint} />
               </div>
               <div className="col">
+                <OutputSettingsGroup control_endpoint={control_endpoint} />
+              </div>
+              <div className="col">
                 <SaveFileSettingsGroup control_endpoint={control_endpoint} />
               </div>
             </div>
@@ -49,7 +53,7 @@ export const Keithley2470 = ({ name }: { name: string }) => {
               fullpath="acquisition/acquiring"
               label="Acquiring"
             />
-            <BufferGraph config_endpoint={control_endpoint} buffer_endpoint={buffers_endpoint} />
+            <BufferGraph buffer_endpoint={buffers_endpoint} />
           </SettingsGroup>
         </div>
       </div>

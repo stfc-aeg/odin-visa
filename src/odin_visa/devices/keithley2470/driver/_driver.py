@@ -1,3 +1,4 @@
+from odin_visa.devices.keithley2470.driver.output import OutputDriver
 from odin_visa.devices.keithley2470.transport import K2470Transport
 
 from .buffer import BufferDriver
@@ -13,6 +14,7 @@ class K2470Driver:
         self.trigger_model = TriggerModelDriver(transport)
         self.source = SourceDriver(transport)
         self.sense = SenseDriver(transport)
+        self.output = OutputDriver(transport)
 
     async def reset(self) -> None:
         await self.transport.write("*RST")

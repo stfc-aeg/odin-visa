@@ -118,6 +118,30 @@ export interface SourceConfig extends ParamNode {
   read_back: boolean;
 }
 
+export const SOURCE_MODES = [
+  "NORMAL",
+  "HIMPEDANCE",
+  "ZERO",
+  "GUARD"
+] as const;
+
+export type SMode = (typeof SOURCE_MODES)[number];
+
+export const TERMINALS = [
+  "FRONT",
+  "REAR"
+] as const;
+
+export type Terminal = (typeof TERMINALS)[number];
+
+export interface OutputConfig extends ParamNode {
+  smode: SMode;
+  interlock: boolean;
+  interlock_tripped: boolean;
+  enabled: boolean
+  terminals: Terminal;
+}
+
 export interface Acquisition extends ParamNode {
   acquiring: boolean;
 }
