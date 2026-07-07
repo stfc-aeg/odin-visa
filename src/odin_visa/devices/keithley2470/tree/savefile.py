@@ -1,12 +1,9 @@
 from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 from odin_visa.devices.keithley2470.state import K2470State
-from odin_visa.devices.keithley2470.transport import logger
-from odin_visa.util.instrument import instrument
 
 
 class SaveFileTree:
-    @instrument(logger, skip={"state"})
     def __init__(self, state: K2470State) -> None:
         self.state = state.config.savefile
         self.tree = AsyncParameterTree(

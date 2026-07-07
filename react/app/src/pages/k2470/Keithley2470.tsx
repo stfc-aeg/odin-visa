@@ -1,9 +1,7 @@
 import { hasData } from "@/lib/types";
-import { type AdapterEndpoint, useAdapterEndpoint, EndpointCheckbox, OdinGraph } from "@dssg/odin-react";
-import { useEffect, useRef } from "react";
+import { useAdapterEndpoint, EndpointCheckbox } from "@dssg/odin-react";
 import { SourceSettingsGroup } from "./settings/SourceSettingsGroup";
-import type { Buffers, Config } from "@/lib/ParamTreeType";
-import { BufferPoll } from "@/lib/bufferPoll";
+import type { Buffer, Config } from "@/lib/ParamTreeType";
 import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";
 import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 import { BufferGraph } from "./BufferGraph";
@@ -11,7 +9,7 @@ import { SettingsGroup } from "./settings/SettingsGroup";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
   const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 1000);
-  const buffers_endpoint = useAdapterEndpoint<Buffers>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 1000);
+  const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 1000);
   // const eventLog = control_endpoint.data?.event_log;
   // const [errorCount, setErrorCount] = useState(eventLog?.count ?? 0);
 
@@ -51,7 +49,7 @@ export const Keithley2470 = ({ name }: { name: string }) => {
               fullpath="acquisition/acquiring"
               label="Acquiring"
             />
-            <BufferGraph buffer_endpoint={buffers_endpoint} />
+            <BufferGraph config_endpoint={control_endpoint} buffer_endpoint={buffers_endpoint} />
           </SettingsGroup>
         </div>
       </div>

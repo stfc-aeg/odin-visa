@@ -6,7 +6,6 @@ from pyvisa import VisaIOError
 from pyvisa.resources import MessageBasedResource
 
 from odin_visa.devices.device import DeviceError
-from odin_visa.util.instrument import instrument, instrument_async
 
 logger = structlog.get_logger()
 
@@ -26,7 +25,6 @@ class K2470Transport:
         self.device = device
         self._lock = asyncio.Lock()
 
-    @instrument(logger)
     async def write(self, cmd: str) -> None:
         async with self._lock:
             # TODO: Device error handling?
@@ -35,7 +33,6 @@ class K2470Transport:
             except VisaIOError as e:
                 raise DeviceWriteError(cmd) from e
 
-    @instrument_async(logger)
     async def query(self, cmd: str) -> str:
         async with self._lock:
             # TODO: Device error handling?
@@ -52,7 +49,6 @@ class K2470Transport:
         except VisaIOError as e:
             raise DeviceReadError from e
 
-    @instrument_async(logger)
     async def query_bytes(self, cmd: str, data_points: int) -> Sequence[float]:
         async with self._lock:
             return await asyncio.to_thread(self._query_bytes_blocking, cmd, data_points)

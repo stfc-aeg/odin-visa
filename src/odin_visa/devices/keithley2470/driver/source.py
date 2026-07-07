@@ -14,12 +14,10 @@ class SourceDriver:
     def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
-    @instrument_async(logger)
     async def set_delay(self, delay: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:DELAY {delay}")
 
-    @instrument_async(logger)
     async def get_delay(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:DELAY?")
@@ -28,12 +26,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_delay(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:DELAY:AUTO {value:d}")
 
-    @instrument_async(logger)
     async def get_auto_delay(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:DELAY:AUTO?")
@@ -42,12 +38,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_high_capacitance(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:HIGH:CAP {value:d}")
 
-    @instrument_async(logger)
     async def get_high_capacitance(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:HIGH:CAP?")
@@ -56,12 +50,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_level(self, level: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function} {level}")
 
-    @instrument_async(logger)
     async def get_level(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}?")
@@ -70,14 +62,12 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_limit(self, limit: float) -> None:
         function = await self.get_function()
         await self.transport.write(
             f"SOUR:{function}:{self._limiting_function(function)}LIM {limit}"
         )
 
-    @instrument_async(logger)
     async def get_limit(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(
@@ -88,7 +78,6 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def get_limit_tripped(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(
@@ -99,11 +88,9 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_function(self, function: SourceFunction) -> None:
         await self.transport.write(f"SOUR:FUNC {function}")
 
-    @instrument_async(logger)
     async def get_function(self) -> SourceFunction:
         response = await self.transport.query("SOUR:FUNC?")
         try:
@@ -111,12 +98,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_protection_level(self, value: ProtectionLevel) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:PROT {value}")
 
-    @instrument_async(logger)
     async def get_protection_level(self) -> ProtectionLevel:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:PROT?")
@@ -125,7 +110,6 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def get_protection_tripped(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:PROT:TRIP?")
@@ -134,12 +118,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_range(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:RANGE {value}")
 
-    @instrument_async(logger)
     async def get_range(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:RANGE?")
@@ -148,12 +130,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_range(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:RANGE:AUTO {value:d}")
 
-    @instrument_async(logger)
     async def get_auto_range(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:RANGE:AUTO?")
@@ -162,12 +142,10 @@ class SourceDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_read_back(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:READ:BACK {value:d}")
 
-    @instrument_async(logger)
     async def get_read_back(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SOUR:{function}:READ:BACK?")

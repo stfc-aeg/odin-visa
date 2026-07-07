@@ -9,7 +9,6 @@ logger = structlog.get_logger()
 
 
 class SourceTree:
-    @instrument(logger, skip={"state"})
     def __init__(self, state: K2470State, driver: K2470Driver) -> None:
         self.state = state.config.source
         self.driver = driver.source
@@ -66,7 +65,6 @@ class SourceTree:
             }
         )
 
-    @instrument(logger)
     async def set_from_state(self) -> None:
         await self.driver.set_delay(self.state.delay)
         await self.driver.set_auto_delay(self.state.auto_delay)
@@ -79,7 +77,6 @@ class SourceTree:
         await self.driver.set_auto_range(self.state.auto_range)
         await self.driver.set_read_back(self.state.read_back)
 
-    @instrument(logger)
     async def refresh(self) -> None:
         self.state.delay = await self.driver.get_delay()
         self.state.auto_delay = await self.driver.get_auto_delay()

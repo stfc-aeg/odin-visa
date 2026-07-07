@@ -10,7 +10,6 @@ class TriggerModelDriver:
     def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
-    @instrument_async(logger)
     async def load_loop_until_trigger_model(self, buffer_name: str) -> None:
         await self.transport.write(
             ':TRIG:LOAD "Empty";'  # load empty template
@@ -19,10 +18,8 @@ class TriggerModelDriver:
             ":TRIG:BLOCK:BRANCH:ALWAYS 3, 1"  # always branch to block 1 (measurement)
         )
 
-    @instrument_async(logger)
     async def trigger(self) -> None:
         await self.transport.write("*TRG")
 
-    @instrument_async(logger)
     async def init(self) -> None:
         await self.transport.write("INIT")

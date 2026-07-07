@@ -1,3 +1,4 @@
+from odin_visa.types import StrEnum
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -88,10 +89,22 @@ class StatusState:
     second_status: TriggerModelStatus = TriggerModelStatus.EMPTY
 
 
+class ResampleMethod(StrEnum):
+    Full = "Full"
+    Mean = "Mean"
+    Median = "Median"
+    Min = "Min"
+    Max = "Max"
+    First = "First"
+
+
 @dataclass
 class BufferState:
     buffer: pd.DataFrame | None = None
     range: int = 10
+    downsample: ResampleMethod = ResampleMethod.Full
+    # TODO: microseconds int?
+    bin_size: str = "50ms"
 
 
 @dataclass

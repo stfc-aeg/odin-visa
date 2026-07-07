@@ -10,7 +10,6 @@ from odin_visa.devices.keithley2470.driver.types import (
     MeasurementNDArray,
 )
 from odin_visa.devices.keithley2470.transport import K2470Transport
-from odin_visa.util.instrument import instrument
 from odin_visa.util.scpi_parse import parse_int
 
 logger = structlog.get_logger()
@@ -20,18 +19,15 @@ class BufferDriver:
     def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
-    @instrument(logger)
     async def create_buffer(self, name: str, size: int) -> None:
         await self.transport.write(
             f':TRAC:MAKE "{name}", {size} ;'
             f':TRAC:FILL:MODE CONT, "{name}"'
         )  # fmt: skip
 
-    @instrument(logger)
     async def delete_buffer(self, name: str) -> None:
         await self.transport.write(f':TRAC:DEL "{name}"')
 
-    @instrument(logger)
     async def get_buffer_size(self, name: str) -> int:
         response = await self.transport.query(f':TRAC:POIN? "{name}"')
         try:
@@ -39,7 +35,6 @@ class BufferDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument(logger)
     async def get_last_measurement_index(self, name: str) -> int:
         response = await self.transport.query(f':TRAC:ACT:END? "{name}"')
         try:

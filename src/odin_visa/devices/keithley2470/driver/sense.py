@@ -13,12 +13,10 @@ class SenseDriver:
     def __init__(self, transport: K2470Transport) -> None:
         self.transport = transport
 
-    @instrument_async(logger)
     async def set_averaging_count(self, value: int) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:AVER:COUN {value}")
 
-    @instrument_async(logger)
     async def get_averaging_count(self) -> int:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:AVER:COUN?")
@@ -27,12 +25,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_averaging(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:AVER {value:d}")
 
-    @instrument_async(logger)
     async def get_averaging(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:AVER?")
@@ -41,12 +37,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_zero(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:AZER {value:d}")
 
-    @instrument_async(logger)
     async def get_auto_zero(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:AZER?")
@@ -60,7 +54,6 @@ class SenseDriver:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:AVER:TCON {value}")
 
-    @instrument_async(logger)
     async def get_averaging_filter(self) -> AveragingType:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:AVER:TCON?")
@@ -69,12 +62,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_nplcs(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:NPLC {value}")
 
-    @instrument_async(logger)
     async def get_nplcs(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:NPLC?")
@@ -83,12 +74,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_offset_compensation(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:OCOM {value:d}")
 
-    @instrument_async(logger)
     async def get_offset_compensation(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:OCOM?")
@@ -97,12 +86,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_range(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RANGE:AUTO {value:d}")
 
-    @instrument_async(logger)
     async def get_auto_range(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RANGE:AUTO?")
@@ -111,12 +98,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_range_lower_limit(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RANGE:AUTO:LLIM {value}")
 
-    @instrument_async(logger)
     async def get_auto_range_lower_limit(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RANGE:AUTO:LLIM?")
@@ -125,12 +110,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_range_rebound(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RANGE:AUTO:REB {value:d}")
 
-    @instrument_async(logger)
     async def get_auto_range_rebound(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RANGE:AUTO:REB?")
@@ -139,13 +122,11 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_auto_range_upper_limit(self, value: float) -> None:
         # Only used for resistence measurements (currently unimplemented)
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RANGE:AUTO:ULIM {value}")
 
-    @instrument_async(logger)
     async def get_auto_range_upper_limit(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RANGE:AUTO:ULIM?")
@@ -154,12 +135,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_range(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RANGE {value}")
 
-    @instrument_async(logger)
     async def get_range(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RANGE?")
@@ -168,12 +147,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_relative_offset_level(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:REL {value}")
 
-    @instrument_async(logger)
     async def get_relative_offset_level(self) -> float:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:REL?")
@@ -182,17 +159,14 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def acquire_relative_offset(self, _: None) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:REL:ACQ")
 
-    @instrument_async(logger)
     async def set_relative_offset(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:REL:STAT {value:d}")
 
-    @instrument_async(logger)
     async def get_relative_offset(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:REL:STAT?")
@@ -201,12 +175,10 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_remote_sensing(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SENS:{function}:RSEN {value:d}")
 
-    @instrument_async(logger)
     async def get_remote_sensing(self) -> bool:
         function = await self.get_function()
         response = await self.transport.query(f"SENS:{function}:RSEN?")
@@ -215,15 +187,12 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def zero(self, _: None) -> None:
         await self.transport.write("SENS:AZER:ONCE")
 
-    @instrument_async(logger)
     async def set_count(self, value: int) -> None:
         await self.transport.write(f"SENS:COUN {value}")
 
-    @instrument_async(logger)
     async def get_count(self) -> int:
         response = await self.transport.query("SENS:COUN?")
         try:
@@ -231,11 +200,9 @@ class SenseDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
-    @instrument_async(logger)
     async def set_function(self, function: SenseFunction) -> None:
         await self.transport.write(f'SENS:FUNC "{function}"')
 
-    @instrument_async(logger)
     async def get_function(self) -> SenseFunction:
         response = await self.transport.query("SENS:FUNC?")
         response = response.strip('"')

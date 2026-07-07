@@ -4,13 +4,11 @@ from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.managers.acquisition import Acquisition
 from odin_visa.devices.keithley2470.state import K2470State
-from odin_visa.util.instrument import instrument
 
 logger = structlog.get_logger()
 
 
 class AcquisitionTree:
-    @instrument(logger, skip={"state"})
     def __init__(
         self, state: K2470State, driver: K2470Driver, acquisition: Acquisition
     ) -> None:
@@ -26,7 +24,6 @@ class AcquisitionTree:
             }
         )
 
-    @instrument(logger)
     async def _set_acquiring(self, value: bool) -> None:
         if value:
             await self.acquisition.start_acquisition()
@@ -35,10 +32,8 @@ class AcquisitionTree:
 
         self.acquiring = value
 
-    @instrument(logger)
     async def set_from_state(self) -> None:
-        self._set_acquiring(self.state.acquiring)
+        await self._set_acquiring(self.state.acquiring)
 
-    @instrument(logger)
     async def refresh(self) -> None:
         pass

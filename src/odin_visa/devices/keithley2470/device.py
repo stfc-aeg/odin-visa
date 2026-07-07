@@ -10,7 +10,6 @@ from typing_extensions import override
 from odin_visa.devices.device import Device
 from odin_visa.devices.device_config import DeviceConfig, DeviceType
 from odin_visa.devices.keithley2470.managers.acquisition import Acquisition
-from odin_visa.util.instrument import instrument, instrument_async
 
 from .driver import K2470Driver
 from .state import K2470State
@@ -40,9 +39,8 @@ class K2470Device(Device):
             state=self.state, driver=self.driver, config=self.config
         )
 
-        self.tree = K2470Tree(self.state, self.driver, self.config, self.acquisition)
+        self.tree = K2470Tree(self.state, self.driver, self.acquisition)
 
-    @instrument_async(logger)
     async def initialise(self) -> None:
         logger.info("Resetting K2470")
         await self.driver.reset()
@@ -57,12 +55,10 @@ class K2470Device(Device):
         await self.driver.buffer.create_buffer(name, size)
 
     @override
-    @instrument(logger)
     def get_param_tree(self) -> AsyncParameterTree:
         return self.tree.tree
 
     @override
-    @instrument_async(logger)
     async def refresh_param_tree(self) -> None:
         return await self.tree.refresh()
 

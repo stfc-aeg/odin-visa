@@ -6,8 +6,8 @@ import { DropdownItem, InputGroup } from "react-bootstrap";
 
 export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   const source = control_endpoint.data.source;
-  const functionName = source.function === "VOLT" ? "Voltage" : "Current";
-  const inverseFunctionName = source.function === "VOLT" ? "Current" : "Voltage";
+  const functionName = source.function === "VOLTAGE" ? "Voltage" : "Current";
+  const inverseFunctionName = source.function === "VOLTAGE" ? "Current" : "Voltage";
 
   const voltageRanges = {
     nV: 1e-9,

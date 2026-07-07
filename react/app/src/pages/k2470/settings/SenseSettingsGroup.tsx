@@ -6,7 +6,7 @@ import { DropdownItem, InputGroup } from "react-bootstrap";
 
 export const SenseSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
   const sense = control_endpoint.data.sense;
-  const functionName = sense.function === "VOLT" ? "Voltage" : "Current";
+  const functionName = sense.function === "VOLTAGE" ? "Voltage" : "Current";
 
   const voltageRanges = {
     nV: 1e-9,

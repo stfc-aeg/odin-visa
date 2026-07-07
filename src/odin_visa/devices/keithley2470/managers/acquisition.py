@@ -27,7 +27,6 @@ class Acquisition:
         self.iteration = 0
         self.last_saved_index = 0
 
-    @instrument_async(logger)
     async def update(self) -> None:
         if not self.is_acquiring:
             return
@@ -73,7 +72,6 @@ class Acquisition:
         self.file_writer.write_chunk(out)
         self.last_saved_index = len(buffer) - 1
 
-    @instrument_async(logger)
     async def start_acquisition(self) -> None:
         logger.info("Starting acqusition")
         if self.is_acquiring:
@@ -95,7 +93,6 @@ class Acquisition:
 
         self.is_acquiring = True
 
-    @instrument_async(logger)
     async def stop_acquisition(self) -> None:
         logger.info("Stopping acqusition")
         if not self.is_acquiring:

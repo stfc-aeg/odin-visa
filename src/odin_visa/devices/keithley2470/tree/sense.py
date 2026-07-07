@@ -83,7 +83,6 @@ class SenseTree:
             }
         )
 
-    @instrument_async(logger)
     async def set_from_state(self) -> None:
         await self.driver.set_function(self.state.function)
         await self.driver.set_count(self.state.count)
@@ -101,7 +100,6 @@ class SenseTree:
         await self.driver.set_relative_offset(self.state.relative_offset)
         await self.driver.set_remote_sensing(self.state.remote_sensing)
 
-    @instrument_async(logger)
     async def refresh(self) -> None:
         self.state.function = await self.driver.get_function()
         self.state.count = await self.driver.get_count()

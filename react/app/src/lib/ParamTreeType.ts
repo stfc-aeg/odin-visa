@@ -8,7 +8,7 @@ export interface OdinVisaParamTree extends ParamNode {
 
 export interface K2470 extends ParamNode {
   device: DeviceDetails,
-  buffers: Buffers,
+  buffer: Buffer,
   config: Config,
 }
 
@@ -130,9 +130,22 @@ export interface Status extends ParamNode {
   second_state: StatusType;
 }
 
-export interface Buffers extends ParamNode {
-  buffers: Record<string, BufferItem[]>,
-  read_from: number,
+export const DOWNSAMPLE_METHODS = [
+  "Full",
+  "Mean",
+  "Median",
+  "Min",
+  "Max",
+  "First",
+] as const;
+
+export type DownsampleMethod = (typeof DOWNSAMPLE_METHODS)[number];
+
+export interface Buffer extends ParamNode {
+  buffer: BufferItem[],
+  range: number,
+  downsample: DownsampleMethod,
+  bin_size: string,
 }
 
 export type BufferItem = [timestamp: number, source: number, sense: number];

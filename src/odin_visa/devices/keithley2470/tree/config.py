@@ -40,13 +40,11 @@ class ConfigTree:
             }
         )
 
-    @instrument(logger)
     async def set_from_state(self) -> None:
         await self.source_tree.set_from_state()
         await self.sense_tree.set_from_state()
         await self.acquisition_tree.set_from_state()
 
-    @instrument(logger)
     async def refresh(self) -> None:
         await self.source_tree.refresh()
         await self.sense_tree.refresh()
