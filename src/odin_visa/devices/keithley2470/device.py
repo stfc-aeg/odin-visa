@@ -35,11 +35,12 @@ class K2470Device(Device):
         self.state.config.savefile.base_folder = self.config.savefile_config.data_folder
         self.transport = K2470Transport(device)
         self.driver = K2470Driver(self.transport)
-        self.tree = K2470Tree(self.state, self.driver, self.config)
 
         self.acquisition = Acquisition(
             state=self.state, driver=self.driver, config=self.config
         )
+
+        self.tree = K2470Tree(self.state, self.driver, self.config, self.acquisition)
 
     @instrument_async(logger)
     async def initialise(self) -> None:

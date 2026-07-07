@@ -40,16 +40,16 @@ class Acquisition:
         if res is None:
             return
         new_measurements, new_index = res
-        self.state.buffers.buffer = (
-            pd.concat([self.state.buffers.buffer, new_measurements])
-            if self.state.buffers.buffer is not None
+        self.state.buffer.buffer = (
+            pd.concat([self.state.buffer.buffer, new_measurements])
+            if self.state.buffer.buffer is not None
             else new_measurements
         )
         logger.info(
             "Read buffer from device",
             new_measurements=len(new_measurements),
-            total_measurements=len(self.state.buffers.buffer),
-            avg_readings_per_iter=len(self.state.buffers.buffer) // self.iteration,
+            total_measurements=len(self.state.buffer.buffer),
+            avg_readings_per_iter=len(self.state.buffer.buffer) // self.iteration,
         )
         self.current_index = new_index
 
@@ -58,7 +58,7 @@ class Acquisition:
 
     async def save_chunk_to_disk(self) -> None:
         logger.info("Saving chunk to disk")
-        buffer = self.state.buffers.buffer
+        buffer = self.state.buffer.buffer
         if buffer is None:
             logger.warning("Buffer is none! Is an acqusition running?")
             return
@@ -80,9 +80,13 @@ class Acquisition:
             logger.warning("Acquisition already running")
             return
 
-        self.state.buffers.buffer = None
-        self.state.buffers.start_from = 0
+        self.state.buffer.buffer = None
         self.file_writer.create_file()
+
+        name = self.config.device_buffer.name
+        size = self.config.device_buffer.size
+        await self.driver.buffer.delete_buffer(name)
+        await self.driver.buffer.create_buffer(name, size)
 
         await self.driver.trigger_model.load_loop_until_trigger_model(
             self.config.device_buffer.name

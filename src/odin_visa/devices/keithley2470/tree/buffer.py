@@ -15,51 +15,39 @@ class BufferTree:
     def __init__(
         self, state: K2470State, driver: K2470Driver, config: DeviceConfig
     ) -> None:
-        self.state = state.buffers
+        self.state = state.buffer
         self.driver = driver.buffer
-        buffers = AsyncParameterTree(
-            {
-                buffer.name: (
-                    lambda: self._get_buffer(
-                        buffer.resample_method, buffer.resample_bin_size
-                    ),
-                    None,
-                )
-                for buffer in config.buffers
-            }
-        )
         self.tree = AsyncParameterTree(
             {
-                "read_from": (lambda: self.state.start_from, self._set_start_from),
-                "buffers": buffers,
+                "range": (lambda: self.state.range, self._set_range),
+                "buffer": (self._get_buffer, None),
             }
         )
 
-    def _set_start_from(self, value: int) -> None:
-        self.state.start_from = value
+    def _set_range(self, value: int) -> None:
+        self.state.range = value
 
     @instrument(logger)
-    def _get_buffer(
-        self, resample_method: ResampleMethod | None, bin_size: str | None
-    ) -> list[tuple[float, float, float]]:
+    def _get_buffer(self) -> list[tuple[float, float, float]]:
         if self.state.buffer is None:
             return []
 
-        start = pd.to_timedelta(self.state.start_from, unit="us")
-        df = self.state.buffer.loc[start:]
-        if bin_size is not None and resample_method is not None:
-            df = df.ffill().resample(bin_size)
-        match resample_method:
-            case ResampleMethod.Mean:
-                df = df.mean()
-            case ResampleMethod.Median:
-                df = df.median()
-            case ResampleMethod.Min:
-                df = df.min()
-            case ResampleMethod.Max:
-                df = df.max()
-            case ResampleMethod.First:
-                df = df.first()
+        start = pd.to_timedelta(self.state.range, unit="s")
+        df = self.state.buffer
+        df = df.loc[df.index.max() - start :]
+        # if bin_size is not None and resample_method is not None:
+        #     df = df.ffill().resample(bin_size)
+        # match resample_method:
+        #     case ResampleMethod.Mean:
+        #         df = df.mean()
+        #     case ResampleMethod.Median:
+        #         df = df.median()
+        #     case ResampleMethod.Min:
+        #         df = df.min()
+        #     case ResampleMethod.Max:
+        #         df = df.max()
+        #     case ResampleMethod.First:
+        #         df = df.first()
 
         return [
             (int(idx.value) / 1000, src, rdg)

@@ -62,7 +62,13 @@ class SaveFileConfigState:
 
 
 @dataclass
+class AcquisitionState:
+    acquiring: bool = False
+
+
+@dataclass
 class ConfigState:
+    acquisition: AcquisitionState = field(default_factory=AcquisitionState)
     source: SourceConfigState = field(default_factory=SourceConfigState)
     sense: SenseConfigState = field(default_factory=SenseConfigState)
     savefile: SaveFileConfigState = field(default_factory=SaveFileConfigState)
@@ -85,7 +91,7 @@ class StatusState:
 @dataclass
 class BufferState:
     buffer: pd.DataFrame | None = None
-    start_from: int = 0
+    range: int = 10
 
 
 @dataclass
@@ -97,4 +103,4 @@ class K2470State:
     config: ConfigState = field(default_factory=ConfigState)
     event_log: EventLogState = field(default_factory=EventLogState)
     status: StatusState = field(default_factory=StatusState)
-    buffers: BufferState = field(default_factory=BufferState)
+    buffer: BufferState = field(default_factory=BufferState)

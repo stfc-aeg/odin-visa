@@ -42,6 +42,7 @@ export interface Event extends ParamNode {
 export interface Config extends ParamNode {
   savefile: SaveFileConfig;
   source: SourceConfig;
+  acquisition: Acquisition;
   poll_freq: number;
 }
 
@@ -117,13 +118,8 @@ export interface SourceConfig extends ParamNode {
   read_back: boolean;
 }
 
-export interface Acquisitions extends ParamNode {
-  type: string;
-  status: Status;
-  output: boolean;
-  start: null;
-  stop: null;
-  paused: boolean;
+export interface Acquisition extends ParamNode {
+  acquiring: boolean;
 }
 
 export type StatusType = "IDLE" | "RUNNING" | "WAITING" | "PAUSED" | "EMPTY" | "BUILDING" | "FAILED" | "ABORTING" | "ABORTED";
