@@ -1,22 +1,25 @@
 from abc import ABC, abstractmethod
 
-from odin_visa.tree import ParameterTreeMixin
-from odin_visa.types import StrEnum
+from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 
-class Device(ParameterTreeMixin, ABC):
+class DeviceError(Exception):
+    """Base exception for any error coming from the device."""
+
+
+class Device(ABC):
     @abstractmethod
-    def query(self, cmd: str) -> str | None:
+    def get_param_tree(self) -> AsyncParameterTree:
         pass
 
     @abstractmethod
-    def write(self, cmd: str) -> None:
+    async def refresh_param_tree(self) -> None:
         pass
 
     @abstractmethod
-    def update(self) -> None:
+    async def update_task(self) -> None:
         pass
 
     @abstractmethod
-    def cleanup(self) -> None:
+    async def cleanup(self) -> None:
         pass

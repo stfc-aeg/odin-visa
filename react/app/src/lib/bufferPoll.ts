@@ -12,6 +12,7 @@ export class BufferPoll {
 
   public async start() {
     await sleep(0); // invalidate initial call in react StrictMode
+    return;
     if (this.running) return;
     this.running = true;
 

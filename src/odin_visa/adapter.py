@@ -1,8 +1,9 @@
+from odin_control.adapters.async_adapter import AsyncApiAdapter
+
 from odin_visa.controller import VisaController
-from odin_control.adapters.adapter import ApiAdapter
 
 
-class VisaAdapter(ApiAdapter):
+class VisaAdapter(AsyncApiAdapter):
 
-    version = '0.1'
+    version = "0.1"
     controller_cls = VisaController

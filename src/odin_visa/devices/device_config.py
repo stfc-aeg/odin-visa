@@ -1,13 +1,23 @@
+from dataclasses import dataclass, field
+
 from dataclass_wizard import JSONSerializable
-from dataclasses import dataclass
+
 from odin_visa.types import StrEnum
+
+
+class ResampleMethod(StrEnum):
+    Mean = "mean"
+    Median = "median"
+    Min = "min"
+    Max = "max"
+    First = "first"
 
 
 @dataclass
 class DownsampledBufferConfig(JSONSerializable):
     name: str
     resample_bin_size: str | None = None
-    resample_method: str | None = None
+    resample_method: ResampleMethod | None = None
 
 
 class DeviceType(StrEnum):
@@ -20,12 +30,19 @@ class SaveFileConfig(JSONSerializable):
 
 
 @dataclass
+class DeviceBuffer(JSONSerializable):
+    name: str = "odin_buffer"
+    size: int = 50000
+
+
+@dataclass
 class DeviceConfig(JSONSerializable):
     name: str
     type: DeviceType
     address: str
     buffers: list[DownsampledBufferConfig]
-    savefile_config: SaveFileConfig = SaveFileConfig()
+    device_buffer: DeviceBuffer = field(default_factory=DeviceBuffer)
+    savefile_config: SaveFileConfig = field(default_factory=SaveFileConfig)
 
 
 @dataclass

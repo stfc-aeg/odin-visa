@@ -7,6 +7,10 @@
       "savefile_config": {
         "data_folder": "/home/callum/dev/dssg/odin-visa/test/acquisitions"
       },
+      "device_buffer": {
+        "name": "odin_buffer",
+        "size": 100000
+      },
       "buffers": [
         {
           "name": "full"

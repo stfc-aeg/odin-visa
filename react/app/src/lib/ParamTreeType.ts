@@ -7,18 +7,15 @@ export interface OdinVisaParamTree extends ParamNode {
 }
 
 export interface K2470 extends ParamNode {
-  control: Control,
-  buffers: Buffers,
+  device: DeviceDetails,
+  buffer: Buffer,
+  config: Config,
 }
 
-export interface Control extends ParamNode {
+export interface DeviceDetails extends ParamNode {
   type: "K2470";
   ident: string;
   address: string;
-
-  event_log: EventLog;
-  config: Config;
-  acquisitions: Acquisitions;
 }
 
 export interface DeviceTypeMap {
@@ -43,63 +40,110 @@ export interface Event extends ParamNode {
 }
 
 export interface Config extends ParamNode {
-  buffer: BufferConfig;
-  mode: ModeConfig;
   savefile: SaveFileConfig;
-  sense: SenseConfig;
   source: SourceConfig;
-}
-
-export interface BufferConfig extends ParamNode {
-  clear: null;
-  name: string;
-  size: number;
-}
-
-export interface ModeConfig extends ParamNode {
-  loop_until_trigger: LoopUntilTriggerConfig;
-}
-
-export interface LoopUntilTriggerConfig extends ParamNode {
-  delay: number;
-  post_trigger_reading_percentage: number;
+  acquisition: Acquisition;
+  poll_freq: number;
 }
 
 export interface SaveFileConfig extends ParamNode {
-  dataset_name: string;
-  filename: string;
-  filepath: string;
-  write_period: number;
+  file: string,
+  subfolder: string,
+  full_path: string,
 }
+
+export const AVERAGING_MODES = [
+  "REPEAT",
+  "MOVING"
+] as const;
+
+export type AveragingFilter = (typeof AVERAGING_MODES)[number];
+
+export const SENSE_FUNCTIONS = [
+  "VOLTAGE",
+  "CURRENT",
+] as const;
+
+export type SenseFunction = (typeof SENSE_FUNCTIONS)[number];
 
 export interface SenseConfig extends ParamNode {
-  auto_range: boolean;
-  averaging: AveragingConfig;
-  count: number;
-  function: string;
+  averaging_count: number;
+  averaging: boolean;
+  averaging_filter: AveragingFilter;
+  auto_zero: boolean;
   nplcs: number;
+  offset_compensation: boolean;
+  auto_range: boolean;
+  auto_range_lower_limit: number;
+  auto_range_rebound: boolean;
+  auto_range_upper_limit: number;
   range: number;
+  relative_offset_level: number
+  relative_offset: boolean;
+  remote_sensing: boolean;
+  count: number;
+  function: SenseFunction;
 }
 
-export interface AveragingConfig extends ParamNode {
-  count: number;
-  enable: false;
-  type: string;
-}
+export const PROTECTION_MODES = [
+  "PROT20",
+  "PROT40",
+  "PROT100",
+  "PROT200",
+  "PROT300",
+  "PROT400",
+  "PROT500",
+  "NONE",
+] as const;
+
+export type ProtectionMode = (typeof PROTECTION_MODES)[number];
+
+export const SOURCE_FUNCTIONS = [
+  "VOLTAGE",
+  "CURRENT",
+] as const;
+
+export type SourceFunction = (typeof SOURCE_FUNCTIONS)[number];
 
 export interface SourceConfig extends ParamNode {
   function: string;
   level: number;
   limit: number;
+  delay: number;
+  auto_delay: boolean;
+  high_capacitance: number;
+  protection: ProtectionMode;
+  range: number;
+  auto_range: boolean;
+  read_back: boolean;
 }
 
-export interface Acquisitions extends ParamNode {
-  type: string;
-  status: Status;
-  output: boolean;
-  start: null;
-  stop: null;
-  paused: boolean;
+export const SOURCE_MODES = [
+  "NORMAL",
+  "HIMPEDANCE",
+  "ZERO",
+  "GUARD"
+] as const;
+
+export type SMode = (typeof SOURCE_MODES)[number];
+
+export const TERMINALS = [
+  "FRONT",
+  "REAR"
+] as const;
+
+export type Terminal = (typeof TERMINALS)[number];
+
+export interface OutputConfig extends ParamNode {
+  smode: SMode;
+  interlock: boolean;
+  interlock_tripped: boolean;
+  enabled: boolean
+  terminals: Terminal;
+}
+
+export interface Acquisition extends ParamNode {
+  acquiring: boolean;
 }
 
 export type StatusType = "IDLE" | "RUNNING" | "WAITING" | "PAUSED" | "EMPTY" | "BUILDING" | "FAILED" | "ABORTING" | "ABORTED";
@@ -110,13 +154,22 @@ export interface Status extends ParamNode {
   second_state: StatusType;
 }
 
-export interface Buffers extends ParamNode {
-  buffers: Record<string, BufferItem[]>,
-  start_from: StartFrom,
+export const DOWNSAMPLE_METHODS = [
+  "Full",
+  "Mean",
+  "Median",
+  "Min",
+  "Max",
+  "First",
+] as const;
+
+export type DownsampleMethod = (typeof DOWNSAMPLE_METHODS)[number];
+
+export interface Buffer extends ParamNode {
+  buffer: BufferItem[],
+  range: number,
+  downsample: DownsampleMethod,
+  bin_size: string,
 }
 
 export type BufferItem = [timestamp: number, source: number, sense: number];
-
-export interface StartFrom extends ParamNode {
-  timestamp: number;
-}
