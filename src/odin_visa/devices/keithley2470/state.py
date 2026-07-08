@@ -44,7 +44,7 @@ class SenseConfigState:
     auto_range_lower_limit: float = 10e-9
     auto_range_rebound: bool = False
     auto_range_upper_limit: float = 0.1
-    range: float = 10e-9
+    range: float = 0.1
     relative_offset_level: float = 0
     relative_offset: bool = False
     remote_sensing: bool = False
@@ -134,7 +134,7 @@ class K2470State:
     kind: DeviceType
     ident: str
     address: str
-    poll_freq: float = 1.0
+    poll_freq: float = 0.2
     config: ConfigState = field(default_factory=ConfigState)
     event_log: EventLogState = field(default_factory=EventLogState)
     status: StatusState = field(default_factory=StatusState)

@@ -68,12 +68,13 @@ class K2470Device(Device):
         while True:
             start = default_timer()
             await self.acquisition.update()
-            await self.refresh_param_tree()
+            if i % 5 == 0:
+                await self.refresh_param_tree()
 
             i += 1
             end = default_timer()
             duration = end - start
-            sleep_duration = self.state.poll_freq - duration
+            sleep_duration = max(self.state.poll_freq - duration, 0)
             logger.debug(
                 "update finished, sleeping til next poll",
                 sleep_duration=sleep_duration,

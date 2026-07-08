@@ -7,21 +7,10 @@ import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 import { BufferGraph } from "./BufferGraph";
 import { SettingsGroup } from "./settings/SettingsGroup";
 import { OutputSettingsGroup } from "./settings/OutputSettingsGroup";
-import { Card } from "react-bootstrap";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
-  const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 1000);
-  const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 1000);
-  // const eventLog = control_endpoint.data?.event_log;
-  // const [errorCount, setErrorCount] = useState(eventLog?.count ?? 0);
-
-  // const { setError } = useError();
-  // useEffect(() => {
-  //   if (eventLog && errorCount != eventLog.count) {
-  //     setError(new Error(eventLog.last_event.message));
-  //     setErrorCount(eventLog.count);
-  //   }
-  // }, [setError, errorCount, eventLog]);
+  const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 500);
+  const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 500);
 
   if (!hasData(control_endpoint)) return <h1>Loading</h1>;
   if (!hasData(buffers_endpoint)) return <h1>Loading</h1>;

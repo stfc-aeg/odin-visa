@@ -85,19 +85,18 @@ class BufferDriver:
     async def _read_measurements(
         self, name: str, start: int, end: int
     ) -> MeasurementNDArray | None:
-        data_points = ((end - start) + 1) * 3
+        data_points = ((end - start) + 1) * 2
         items = np.asarray(
             await self.transport.query_bytes(
-                f':TRAC:DATA? {start}, {end}, "{name}", REL, SOUR, READ', data_points
+                f':TRAC:DATA? {start}, {end}, "{name}", REL, READ', data_points
             ),
             dtype=np.float64,
         )
-        items[::3] *= 1_000_000
-        rows = items.reshape(-1, 3)
+        items[::2] *= 1_000_000
+        rows = items.reshape(-1, 2)
         return pd.DataFrame(
             {
                 "reading": rows[:, 1],
-                "source": rows[:, 2],
             },
             index=pd.to_timedelta(rows[:, 0], unit="us"),
         ).rename_axis("timestamp")
@@ -107,7 +106,7 @@ class BufferDriver:
     ) -> MeasurementNDArray | None:
         return self._parse_response_str(
             await self.transport.query(
-                f':TRAC:DATA? {start}, {end}, "{name}", REL, SOUR, READ'
+                f':TRAC:DATA? {start}, {end}, "{name}", REL, READ'
             )
         )
 
@@ -116,15 +115,14 @@ class BufferDriver:
 
         if items.size == 0:
             return None
-        if items.size % 3 != 0:
+        if items.size % 2 != 0:
             raise InvalidBufferSizeError(items.size)
 
-        items[::3] *= 1_000_000
-        rows = items.reshape(-1, 3)
+        items[::2] *= 1_000_000
+        rows = items.reshape(-1, 2)
         return pd.DataFrame(
             {
                 "reading": rows[:, 1],
-                "source": rows[:, 2],
             },
             index=pd.to_timedelta(rows[:, 0], unit="us"),
         ).rename_axis("timestamp")

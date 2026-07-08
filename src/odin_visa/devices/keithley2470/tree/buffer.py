@@ -33,7 +33,7 @@ class BufferTree:
     def _set_bin_size(self, value: str) -> None:
         self.state.bin_size = value
 
-    def _get_buffer(self) -> list[tuple[float, float, float]]:
+    def _get_buffer(self) -> list[tuple[float, float]]:
         if self.state.buffer is None:
             return []
 
@@ -59,6 +59,6 @@ class BufferTree:
                 df = df.first()
 
         return [
-            (int(idx.value) / 1000, src, rdg)
-            for idx, src, rdg in df.ffill().itertuples(index=True, name=None)
+            (int(idx.value) / 1000, rdg)
+            for idx, rdg in df.ffill().itertuples(index=True, name=None)
         ]

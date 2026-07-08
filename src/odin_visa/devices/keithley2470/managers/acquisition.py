@@ -67,7 +67,6 @@ class Acquisition:
 
         out["timestamp"] = df.index.asi8 // 1_000  # datetime ns -> microseconds
         out["reading"] = df["reading"].to_numpy()
-        out["source"] = df["source"].to_numpy()
 
         self.file_writer.write_chunk(out)
         self.last_saved_index = len(buffer) - 1
@@ -78,11 +77,12 @@ class Acquisition:
             logger.warning("Acquisition already running")
             return
 
+        self.current_index = 1
         self.state.buffer.buffer = None
         self.file_writer.create_file()
 
-        name = self.config.device_buffer.name
         size = self.config.device_buffer.size
+        name = self.config.device_buffer.name
         await self.driver.buffer.delete_buffer(name)
         await self.driver.buffer.create_buffer(name, size)
 
