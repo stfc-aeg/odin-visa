@@ -2,6 +2,12 @@ from abc import ABC, abstractmethod
 
 from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
+from odin_visa.types import StrEnum
+
+
+class DeviceType(StrEnum):
+    K2470 = "K2470"
+
 
 class DeviceError(Exception):
     """Base exception for any error coming from the device."""

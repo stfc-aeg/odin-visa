@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 
 from dataclass_wizard import JSONSerializable
 
+from odin_visa.devices.device import DeviceType
+from odin_visa.devices.keithley2470.state import ConfigState
 from odin_visa.types import StrEnum
 
 
@@ -20,13 +22,10 @@ class DownsampledBufferConfig(JSONSerializable):
     resample_method: ResampleMethod | None = None
 
 
-class DeviceType(StrEnum):
-    K2470 = "K2470"
-
-
 @dataclass
 class SaveFileConfig(JSONSerializable):
     data_folder: str = "/data"
+    save_frequency: int = 10
 
 
 @dataclass
@@ -40,7 +39,7 @@ class DeviceConfig(JSONSerializable):
     name: str
     type: DeviceType
     address: str
-    buffers: list[DownsampledBufferConfig]
+    default_state: ConfigState = field(default_factory=ConfigState)
     device_buffer: DeviceBuffer = field(default_factory=DeviceBuffer)
     savefile_config: SaveFileConfig = field(default_factory=SaveFileConfig)
 

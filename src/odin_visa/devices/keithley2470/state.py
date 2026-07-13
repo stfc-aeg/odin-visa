@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from odin_visa.devices.device_config import DeviceType
+from odin_visa.devices.device import DeviceType
 from odin_visa.devices.keithley2470.types import (
     AveragingType,
     Event,
@@ -35,7 +35,7 @@ class SourceConfigState:
 @dataclass
 class SenseConfigState:
     averaging_count: int = 1
-    averaging_enable: bool = False
+    averaging: bool = False
     averaging_type: AveragingType = AveragingType.REPEAT
     auto_zero: bool = False
     nplcs: float = 0.1
@@ -95,6 +95,7 @@ class ConfigState:
     sense: SenseConfigState = field(default_factory=SenseConfigState)
     savefile: SaveFileConfigState = field(default_factory=SaveFileConfigState)
     output: OutputState = field(default_factory=OutputState)
+    poll_freq: float = 1.0
 
 
 @dataclass
@@ -134,8 +135,7 @@ class K2470State:
     kind: DeviceType
     ident: str
     address: str
-    poll_freq: float = 0.2
-    config: ConfigState = field(default_factory=ConfigState)
+    config: ConfigState
     event_log: EventLogState = field(default_factory=EventLogState)
     status: StatusState = field(default_factory=StatusState)
     buffer: BufferState = field(default_factory=BufferState)

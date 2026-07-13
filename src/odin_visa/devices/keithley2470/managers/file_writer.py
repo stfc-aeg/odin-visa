@@ -49,7 +49,7 @@ class FileWriter:
                 source_grp.attrs["read_back"] = self.state.source.read_back
 
                 sense_grp = grp.create_group("sense")
-                sense_grp.attrs["averaging_enabled"] = self.state.sense.averaging_enable
+                sense_grp.attrs["averaging_enabled"] = self.state.sense.averaging
                 sense_grp.attrs["averaging_count"] = self.state.sense.averaging_count
                 sense_grp.attrs["averaging_type"] = str(self.state.sense.averaging_type)
                 sense_grp.attrs["auto_zero"] = self.state.sense.auto_zero

@@ -19,7 +19,7 @@ class SenseTree:
                     self.driver.set_averaging_count,
                 ),
                 "averaging": (
-                    lambda: self.state.averaging_enable,
+                    lambda: self.state.averaging,
                     self.driver.set_averaging,
                 ),
                 "averaging_filter": (
@@ -87,7 +87,7 @@ class SenseTree:
         await self.driver.set_function(self.state.function)
         await self.driver.set_count(self.state.count)
         await self.driver.set_averaging_count(self.state.averaging_count)
-        await self.driver.set_averaging(self.state.averaging_enable)
+        await self.driver.set_averaging(self.state.averaging)
         await self.driver.set_averaging_filter(self.state.averaging_type)
         await self.driver.set_auto_zero(self.state.auto_zero)
         await self.driver.set_nplcs(self.state.nplcs)
@@ -104,7 +104,7 @@ class SenseTree:
         self.state.function = await self.driver.get_function()
         self.state.count = await self.driver.get_count()
         self.state.averaging_count = await self.driver.get_averaging_count()
-        self.state.averaging_enable = await self.driver.get_averaging()
+        self.state.averaging = await self.driver.get_averaging()
         self.state.averaging_type = await self.driver.get_averaging_filter()
         self.state.auto_zero = await self.driver.get_auto_zero()
         self.state.nplcs = await self.driver.get_nplcs()

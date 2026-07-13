@@ -30,7 +30,12 @@ class K2470Device(Device):
     ) -> None:
         logger.info("Initialising K2470Device", ident=ident, address=address)
         self.config = config
-        self.state = K2470State(kind=DeviceType.K2470, ident=ident, address=address)
+        self.state = K2470State(
+            kind=DeviceType.K2470,
+            ident=ident,
+            address=address,
+            config=config.default_state,
+        )
         self.state.config.savefile.base_folder = self.config.savefile_config.data_folder
         self.transport = K2470Transport(device)
         self.driver = K2470Driver(self.transport)
@@ -68,13 +73,12 @@ class K2470Device(Device):
         while True:
             start = default_timer()
             await self.acquisition.update()
-            if i % 5 == 0:
-                await self.refresh_param_tree()
+            await self.refresh_param_tree()
 
             i += 1
             end = default_timer()
             duration = end - start
-            sleep_duration = max(self.state.poll_freq - duration, 0)
+            sleep_duration = max(self.state.config.poll_freq - duration, 0)
             logger.debug(
                 "update finished, sleeping til next poll",
                 sleep_duration=sleep_duration,

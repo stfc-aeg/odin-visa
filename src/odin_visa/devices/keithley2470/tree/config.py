@@ -37,8 +37,8 @@ class ConfigTree:
                 "acquisition": self.acquisition_tree.tree,
                 "output": self.output_tree.tree,
                 "poll_freq": (
-                    lambda: self.state.poll_freq,
-                    lambda freq: setattr(self.state, "poll_freq", freq),
+                    lambda: self.state.config.poll_freq,
+                    lambda freq: setattr(self.state.config, "poll_freq", freq),
                 ),
             }
         )

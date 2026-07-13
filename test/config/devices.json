@@ -7,40 +7,13 @@
       "savefile_config": {
         "data_folder": "/home/callum/dev/dssg/odin-visa/test/acquisitions"
       },
+      "default_state": {
+        "poll_freq": 0.5
+      },
       "device_buffer": {
         "name": "odin_buffer",
         "size": 100000
-      },
-      "buffers": [
-        {
-          "name": "full"
-        },
-        {
-          "name": "mean_50ms",
-          "resample_bin_size": "50ms",
-          "resample_method": "mean"
-        },
-        {
-          "name": "median_50ms",
-          "resample_bin_size": "50ms",
-          "resample_method": "median"
-        },
-        {
-          "name": "min_50ms",
-          "resample_bin_size": "50ms",
-          "resample_method": "min"
-        },
-        {
-          "name": "max_50ms",
-          "resample_bin_size": "50ms",
-          "resample_method": "max"
-        },
-        {
-          "name": "first_50ms",
-          "resample_bin_size": "50ms",
-          "resample_method": "first"
-        }
-      ]
+      }
     }
   ]
 }

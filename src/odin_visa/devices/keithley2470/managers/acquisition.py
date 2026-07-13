@@ -7,7 +7,6 @@ from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.driver.types import ITEM_DTYPE
 from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
 from odin_visa.devices.keithley2470.state import K2470State
-from odin_visa.util.instrument import instrument_async
 
 logger = structlog.get_logger()
 
@@ -52,7 +51,7 @@ class Acquisition:
         )
         self.current_index = new_index
 
-        if self.iteration % 5 == 4:
+        if self.iteration % self.config.savefile_config.save_frequency == 0:
             await self.save_chunk_to_disk()
 
     async def save_chunk_to_disk(self) -> None:
