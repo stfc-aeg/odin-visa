@@ -1,5 +1,5 @@
 import { hasData } from "@/lib/types";
-import { useAdapterEndpoint, EndpointCheckbox } from "@dssg/odin-react";
+import { useAdapterEndpoint, EndpointCheckbox, EndpointButton } from "@dssg/odin-react";
 import { SourceSettingsGroup } from "./settings/SourceSettingsGroup";
 import type { Buffer, Config } from "@/lib/ParamTreeType";
 import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";
@@ -14,6 +14,8 @@ export const Keithley2470 = ({ name }: { name: string }) => {
 
   if (!hasData(control_endpoint)) return <h1>Loading</h1>;
   if (!hasData(buffers_endpoint)) return <h1>Loading</h1>;
+
+  const acquiring = control_endpoint.data.acquisition.acquiring
 
   return (
     <div className="container-fluid p-2 d-flex flex-column">
@@ -42,11 +44,14 @@ export const Keithley2470 = ({ name }: { name: string }) => {
                 </div>
               ) :
                 (
-                  <EndpointCheckbox
+                  <EndpointButton
                     endpoint={control_endpoint}
                     fullpath="acquisition/acquiring"
-                    label="Acquiring"
-                  />
+                    className={acquiring ? "bg-danger" : "bg-success"}
+                    value={!acquiring}
+                  >
+                    {acquiring ? "Stop" : "Start"}
+                  </EndpointButton>
                 )}
               <BufferGraph buffer_endpoint={buffers_endpoint} />
             </SettingsGroup>
