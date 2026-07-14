@@ -38,11 +38,14 @@ export const Keithley2470 = ({ name }: { name: string }) => {
         <div className="col-lg p-3">
           <div className="mb-3">
             <SettingsGroup title="Acquisition">
-              {config_endpoint.data.savefile.exists && !config_endpoint.data.acquisition.acquiring ? (
-                <div className="alert alert-warning">
-                  File already exists, cannot start acqusition.
-                </div>
-              ) :
+              {config_endpoint.data.savefile.exists
+                && config_endpoint.data.savefile.enable
+                && !config_endpoint.data.acquisition.acquiring
+                ? (
+                  <div className="alert alert-warning">
+                    File already exists, cannot start acqusition.
+                  </div>
+                ) :
                 (
                   <EndpointButton
                     endpoint={config_endpoint}

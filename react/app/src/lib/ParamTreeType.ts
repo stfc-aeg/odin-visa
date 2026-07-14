@@ -48,6 +48,7 @@ export interface Config extends ParamNode {
 }
 
 export interface SaveFileConfig extends ParamNode {
+  enable: boolean,
   file: string,
   subfolder: string,
   full_path: string,

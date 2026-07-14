@@ -51,7 +51,10 @@ class Acquisition:
         )
         self.current_index = new_index
 
-        if self.iteration % self.config.savefile_config.save_frequency == 0:
+        if (
+            self.state.config.savefile.enable
+            and self.iteration % self.config.savefile_config.save_frequency == 0
+        ):
             await self.save_chunk_to_disk()
 
     async def save_chunk_to_disk(self) -> None:

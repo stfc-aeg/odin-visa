@@ -54,6 +54,7 @@ class SenseConfigState:
 
 @dataclass
 class SaveFileConfigState:
+    enable: bool = True
     file: str = f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')}.hdf5"
     subfolder: str = ""
     base_folder: str = ""
