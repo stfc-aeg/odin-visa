@@ -42,6 +42,7 @@ export interface Event extends ParamNode {
 export interface Config extends ParamNode {
   savefile: SaveFileConfig;
   source: SourceConfig;
+  sense: SenseConfig;
   acquisition: Acquisition;
   poll_freq: number;
 }

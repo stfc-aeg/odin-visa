@@ -1,11 +1,11 @@
 import { PROTECTION_MODES, SOURCE_FUNCTIONS } from "@/lib/ParamTreeType";
-import type { ControlEndpointProp } from "@/lib/types";
+import type { ConfigEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
 import { EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 
-export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
-  const source = control_endpoint.data.source;
+export const SourceSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
+  const source = config_endpoint.data.source;
   const functionName = source.function === "VOLTAGE" ? "Voltage" : "Current";
   const inverseFunctionName = source.function === "VOLTAGE" ? "Current" : "Voltage";
 
@@ -32,7 +32,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
                 <InputGroup.Text>
                   Source Function
                 </InputGroup.Text>
-                <EndpointDropdown endpoint={control_endpoint} fullpath="source/function">
+                <EndpointDropdown endpoint={config_endpoint} fullpath="source/function">
                   {SOURCE_FUNCTIONS.map((mode) => (
                     <DropdownItem key={mode} eventKey={mode}>{mode}</DropdownItem>
                   ))}
@@ -41,7 +41,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
             </div>
             <div className="col-auto">
               <EndpointCheckbox
-                endpoint={control_endpoint}
+                endpoint={config_endpoint}
                 fullpath="source/read_back"
                 label="Source Read Back"
               />
@@ -58,7 +58,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
                 <EndpointDropdown
                   id="protection-mode-dropdown"
                   aria-labelledby="protection-mode-label"
-                  endpoint={control_endpoint}
+                  endpoint={config_endpoint}
                   fullpath="source/protection"
                 >
                   {PROTECTION_MODES.map((mode) => (
@@ -69,7 +69,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
             </div>
             <div className="col-auto">
               <EndpointCheckbox
-                endpoint={control_endpoint}
+                endpoint={config_endpoint}
                 fullpath="source/high_capacitance"
                 label="High Capacitance Mode"
               />
@@ -78,7 +78,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
         </div>
         <div className="col">
           <EndpointRangeInput
-            endpoint={control_endpoint}
+            endpoint={config_endpoint}
             fullpath="source/level"
             defaultRange={functionName === "Voltage" ? "V" : "A"}
             ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
@@ -87,7 +87,7 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
         </div>
         <div className="col">
           <EndpointRangeInput
-            endpoint={control_endpoint}
+            endpoint={config_endpoint}
             fullpath="source/limit"
             defaultRange={inverseFunctionName === "Voltage" ? "V" : "A"}
             ranges={inverseFunctionName === "Voltage" ? voltageRanges : currentRanges}
@@ -99,18 +99,18 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
             <div className="col">
               <InputGroup>
                 <EndpointRangeInput
-                  endpoint={control_endpoint}
+                  endpoint={config_endpoint}
                   fullpath="source/range"
                   defaultRange={functionName === "Voltage" ? "V" : "A"}
                   ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
-                  disabled={control_endpoint.data.source.auto_range}
+                  disabled={config_endpoint.data.source.auto_range}
                   title="Range"
                 />
               </InputGroup>
             </div>
             <div className="col-auto">
               <EndpointCheckbox
-                endpoint={control_endpoint}
+                endpoint={config_endpoint}
                 fullpath="source/auto_range"
                 label="Auto"
               />
@@ -125,15 +125,15 @@ export const SourceSettingsGroup = ({ control_endpoint }: ControlEndpointProp) =
                   Delay
                 </InputGroup.Text>
                 <EndpointInput
-                  endpoint={control_endpoint}
+                  endpoint={config_endpoint}
                   fullpath="source/delay"
-                  disabled={control_endpoint.data.source.auto_delay}
+                  disabled={config_endpoint.data.source.auto_delay}
                 />
               </InputGroup>
             </div>
             <div className="col-auto">
               <EndpointCheckbox
-                endpoint={control_endpoint}
+                endpoint={config_endpoint}
                 fullpath="source/auto_delay"
                 label="Auto"
               />

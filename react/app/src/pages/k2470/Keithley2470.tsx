@@ -9,13 +9,13 @@ import { SettingsGroup } from "./settings/SettingsGroup";
 import { OutputSettingsGroup } from "./settings/OutputSettingsGroup";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
-  const control_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 500);
+  const config_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 500);
   const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 500);
 
-  if (!hasData(control_endpoint)) return <h1>Loading</h1>;
+  if (!hasData(config_endpoint)) return <h1>Loading</h1>;
   if (!hasData(buffers_endpoint)) return <h1>Loading</h1>;
 
-  const acquiring = control_endpoint.data.acquisition.acquiring
+  const acquiring = config_endpoint.data.acquisition.acquiring
 
   return (
     <div className="container-fluid p-2 d-flex flex-column">
@@ -24,13 +24,13 @@ export const Keithley2470 = ({ name }: { name: string }) => {
           <div className="container-fluid p-3">
             <div className="row row-cols-1 gy-3">
               <div className="col">
-                <SourceSettingsGroup control_endpoint={control_endpoint} />
+                <SourceSettingsGroup config_endpoint={config_endpoint} />
               </div>
               <div className="col">
-                <SenseSettingsGroup control_endpoint={control_endpoint} />
+                <SenseSettingsGroup config_endpoint={config_endpoint} />
               </div>
               <div className="col">
-                <OutputSettingsGroup control_endpoint={control_endpoint} />
+                <OutputSettingsGroup config_endpoint={config_endpoint} />
               </div>
             </div>
           </div>
@@ -38,14 +38,14 @@ export const Keithley2470 = ({ name }: { name: string }) => {
         <div className="col-lg p-3">
           <div className="mb-3">
             <SettingsGroup title="Acquisition">
-              {control_endpoint.data.savefile.exists && !control_endpoint.data.acquisition.acquiring ? (
+              {config_endpoint.data.savefile.exists && !config_endpoint.data.acquisition.acquiring ? (
                 <div className="alert alert-warning">
                   File already exists, cannot start acqusition.
                 </div>
               ) :
                 (
                   <EndpointButton
-                    endpoint={control_endpoint}
+                    endpoint={config_endpoint}
                     fullpath="acquisition/acquiring"
                     className={acquiring ? "bg-danger" : "bg-success"}
                     value={!acquiring}
@@ -56,7 +56,7 @@ export const Keithley2470 = ({ name }: { name: string }) => {
               <BufferGraph buffer_endpoint={buffers_endpoint} />
             </SettingsGroup>
           </div>
-          <SaveFileSettingsGroup control_endpoint={control_endpoint} />
+          <SaveFileSettingsGroup config_endpoint={config_endpoint} />
         </div>
       </div>
     </div>

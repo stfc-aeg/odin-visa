@@ -1,9 +1,9 @@
-import type { ControlEndpointProp } from "@/lib/types";
+import type { ConfigEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
 import { EndpointInput } from "@dssg/odin-react";
 import { InputGroup } from "react-bootstrap";
 
-export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp) => {
+export const SaveFileSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
   return (
     <SettingsGroup title="Save File Settings">
       <div className="row row-cols-1 gy-2">
@@ -12,7 +12,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               File
             </InputGroup.Text>
-            <EndpointInput title="File" endpoint={control_endpoint} fullpath="savefile/file" />
+            <EndpointInput title="File" endpoint={config_endpoint} fullpath="savefile/file" />
           </InputGroup>
         </div>
         <div className="col">
@@ -20,7 +20,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               Subfolder
             </InputGroup.Text>
-            <EndpointInput title="Folder" endpoint={control_endpoint} fullpath="savefile/subfolder" />
+            <EndpointInput title="Folder" endpoint={config_endpoint} fullpath="savefile/subfolder" />
           </InputGroup>
         </div>
         <div className="col">
@@ -28,7 +28,7 @@ export const SaveFileSettingsGroup = ({ control_endpoint }: ControlEndpointProp)
             <InputGroup.Text>
               Output Path
             </InputGroup.Text>
-            <EndpointInput disabled title="Folder" endpoint={control_endpoint} fullpath="savefile/full_path" />
+            <EndpointInput disabled title="Folder" endpoint={config_endpoint} fullpath="savefile/full_path" />
           </InputGroup>
         </div>
       </div>
