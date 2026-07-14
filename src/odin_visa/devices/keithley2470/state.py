@@ -54,13 +54,17 @@ class SenseConfigState:
 
 @dataclass
 class SaveFileConfigState:
-    enable: bool = True
-    file: str = f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')}.hdf5"
-    subfolder: str = ""
-    base_folder: str = ""
+    @staticmethod
+    def timestamped_filename() -> str:
+        return f"{datetime.now(timezone.utc).strftime('%Y-%m-%dT%H%M%SZ')}.hdf5"
 
     def path(self) -> Path:
         return Path(self.base_folder).joinpath(self.subfolder).joinpath(self.file)
+
+    enable: bool = True
+    file: str = field(default_factory=timestamped_filename)
+    subfolder: str = ""
+    base_folder: str = ""
 
 
 @dataclass

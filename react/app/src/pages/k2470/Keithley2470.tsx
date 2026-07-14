@@ -43,7 +43,21 @@ export const Keithley2470 = ({ name }: { name: string }) => {
                 && !config_endpoint.data.acquisition.acquiring
                 ? (
                   <div className="alert alert-warning">
-                    File already exists, cannot start acqusition.
+                    <div className="row align-items-center">
+                      <div className="col">
+                        File already exists, cannot start acqusition.
+                      </div>
+                      <div className="col-auto">
+                        <EndpointButton
+                          disabled={acquiring || !config_endpoint.data.savefile.enable}
+                          className="btn-warning"
+                          endpoint={config_endpoint}
+                          fullpath="savefile/set_file_from_timestamp"
+                        >
+                          Set From Current Time
+                        </EndpointButton>
+                      </div>
+                    </div>
                   </div>
                 ) :
                 (
