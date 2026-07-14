@@ -3,13 +3,15 @@ import { SettingsGroup } from "./SettingsGroup"
 import { DropdownItem, InputGroup } from "react-bootstrap";
 import { EndpointCheckbox, EndpointDropdown } from "@dssg/odin-react";
 import { SOURCE_MODES, TERMINALS } from "@/lib/ParamTreeType";
+import { clsx } from "clsx";
 
-export const OutputSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
+export const OutputSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   return (
-    <SettingsGroup title="Output Settings">
+    <SettingsGroup disabled={disabled} title="Output Settings">
       <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
           <EndpointCheckbox
+            disabled={disabled}
             endpoint={config_endpoint}
             fullpath="output/enabled"
             label="Enable Output"
@@ -19,6 +21,7 @@ export const OutputSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => 
           <div className="row row-cols-2">
             <div className="col">
               <EndpointCheckbox
+                disabled={disabled}
                 endpoint={config_endpoint}
                 fullpath="output/interlock"
                 label="Enable Interlock"
@@ -26,6 +29,7 @@ export const OutputSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => 
             </div>
             <div className="col">
               <EndpointCheckbox
+                disabled={disabled}
                 endpoint={config_endpoint}
                 fullpath="output/interlock_tripped"
                 className="disabled"
@@ -36,10 +40,14 @@ export const OutputSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => 
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               Disabled Output Source Mode
             </InputGroup.Text>
-            <EndpointDropdown endpoint={config_endpoint} fullpath="output/smode">
+            <EndpointDropdown
+              disabled={disabled}
+              endpoint={config_endpoint}
+              fullpath="output/smode"
+            >
               {SOURCE_MODES.map((func) => (
                 <DropdownItem key={func} eventKey={func}>{func}</DropdownItem>
               ))}
@@ -48,10 +56,14 @@ export const OutputSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => 
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               Terminals
             </InputGroup.Text>
-            <EndpointDropdown endpoint={config_endpoint} fullpath="output/terminals">
+            <EndpointDropdown
+              disabled={disabled}
+              endpoint={config_endpoint}
+              fullpath="output/terminals"
+            >
               {TERMINALS.map((func) => (
                 <DropdownItem key={func} eventKey={func}>{func}</DropdownItem>
               ))}

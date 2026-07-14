@@ -8,6 +8,7 @@ export const hasData = <T extends Record<string, ParamTree>>(endpoint: AdapterEn
 }
 
 export interface ConfigEndpointProp {
+  disabled?: boolean;
   config_endpoint: WithRequired<AdapterEndpoint<Config>, "data">;
 }
 

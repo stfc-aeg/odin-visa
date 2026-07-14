@@ -2,9 +2,10 @@ import { AVERAGING_MODES, SENSE_FUNCTIONS } from "@/lib/ParamTreeType";
 import type { ConfigEndpointProp } from "@/lib/types";
 import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
 import { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
+import { clsx } from "clsx";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 
-export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
+export const SenseSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   const sense = config_endpoint.data.sense;
   const functionName = sense.function === "VOLTAGE" ? "Voltage" : "Current";
 
@@ -22,16 +23,20 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
   };
 
   return (
-    <SettingsGroup title="Sense Settings">
+    <SettingsGroup disabled={disabled} title="Sense Settings">
       <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
           <div className="row align-items-center gy-2">
             <div className="col">
               <InputGroup>
-                <InputGroup.Text>
+                <InputGroup.Text className={clsx(disabled && "text-secondary")}>
                   Sense Function
                 </InputGroup.Text>
-                <EndpointDropdown endpoint={config_endpoint} fullpath="sense/function">
+                <EndpointDropdown
+                  disabled={disabled}
+                  endpoint={config_endpoint}
+                  fullpath="sense/function"
+                >
                   {SENSE_FUNCTIONS.map((func) => (
                     <DropdownItem key={func} eventKey={func}>{func}</DropdownItem>
                   ))}
@@ -40,6 +45,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
             </div>
             <div className="col-auto">
               <EndpointCheckbox
+                disabled={disabled}
                 endpoint={config_endpoint}
                 fullpath="sense/auto_zero"
                 label="Auto Zero"
@@ -49,7 +55,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
               <EndpointButton
                 endpoint={config_endpoint}
                 fullpath="sense/zero"
-                disabled={sense.auto_zero}
+                disabled={sense.auto_zero || disabled}
               >
                 Zero
               </EndpointButton>
@@ -58,6 +64,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         </div>
         <div className="col">
           <EndpointCheckbox
+            disabled={disabled}
             endpoint={config_endpoint}
             fullpath="sense/averaging"
             label="Averaging Enable"
@@ -66,23 +73,27 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         <div className="col">
           <div className="row row-cols-2 align-items-center gy-2">
             <div className="col">
-              <InputGroup>
-                <InputGroup.Text>
+              <InputGroup className={clsx(disabled && "text-secondary")}>
+                <InputGroup.Text className={clsx(disabled && "text-secondary")}>
                   Averaging Count
                 </InputGroup.Text>
                 <EndpointInput
                   endpoint={config_endpoint}
                   fullpath="sense/averaging_count"
-                  disabled={!sense.averaging}
+                  disabled={!sense.averaging || disabled}
                 />
               </InputGroup>
             </div>
             <div className="col">
               <InputGroup>
-                <InputGroup.Text>
+                <InputGroup.Text className={clsx(disabled && "text-secondary")}>
                   Averaging Filter
                 </InputGroup.Text>
-                <EndpointDropdown endpoint={config_endpoint} fullpath="sense/averaging_filter" disabled={!sense.averaging}>
+                <EndpointDropdown
+                  endpoint={config_endpoint}
+                  fullpath="sense/averaging_filter"
+                  disabled={!sense.averaging || disabled}
+                >
                   {AVERAGING_MODES.map((filter) => (
                     <DropdownItem key={filter} eventKey={filter}>{filter}</DropdownItem>
                   ))}
@@ -93,6 +104,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         </div>
         <div className="col">
           <EndpointCheckbox
+            disabled={disabled}
             endpoint={config_endpoint}
             fullpath="sense/offset_compensation"
             label="Offset Compensation"
@@ -102,6 +114,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
           <div className="row row-cols-2 align-items-center gy-2">
             <div className="col-auto">
               <EndpointCheckbox
+                disabled={disabled}
                 endpoint={config_endpoint}
                 fullpath="sense/auto_range"
                 label="Enable Auto Range"
@@ -112,26 +125,26 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
                 endpoint={config_endpoint}
                 fullpath="sense/auto_range_rebound"
                 label="Auto Range Rebound"
-                disabled={!sense.auto_range}
+                disabled={!sense.auto_range || disabled}
               />
             </div>
           </div>
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               Auto Range Lower Limit
             </InputGroup.Text>
             <EndpointInput
               endpoint={config_endpoint}
               fullpath="sense/auto_range_lower_limit"
-              disabled={!sense.auto_range}
+              disabled={!sense.auto_range || disabled}
             />
           </InputGroup>
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               Auto Range Upper Limit
             </InputGroup.Text>
             <EndpointInput
@@ -148,15 +161,16 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
             defaultRange={functionName === "Voltage" ? "V" : "A"}
             ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
             title="Range"
-            disabled={sense.auto_range}
+            disabled={sense.auto_range || disabled}
           />
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               NPLCs
             </InputGroup.Text>
             <EndpointInput
+              disabled={disabled}
               endpoint={config_endpoint}
               fullpath="sense/nplcs"
             />
@@ -164,10 +178,11 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         </div>
         <div className="col">
           <InputGroup>
-            <InputGroup.Text>
+            <InputGroup.Text className={clsx(disabled && "text-secondary")}>
               Measurement Count
             </InputGroup.Text>
             <EndpointInput
+              disabled={disabled}
               endpoint={config_endpoint}
               fullpath="sense/count"
             />
@@ -175,6 +190,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         </div>
         <div className="col">
           <EndpointCheckbox
+            disabled={disabled}
             endpoint={config_endpoint}
             fullpath="sense/relative_offset"
             label="Enable Relative Offset"
@@ -189,14 +205,14 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
                 defaultRange={functionName === "Voltage" ? "V" : "A"}
                 ranges={functionName === "Voltage" ? voltageRanges : currentRanges}
                 title="Relative Offset Level"
-                disabled={!sense.relative_offset}
+                disabled={!sense.relative_offset || disabled}
               />
             </div>
             <div className="col-auto">
               <EndpointButton
                 endpoint={config_endpoint}
                 fullpath="sense/acquire_relative_offset"
-                disabled={!sense.relative_offset}
+                disabled={!sense.relative_offset || disabled}
               >
                 Set As Current Level
               </EndpointButton>
@@ -205,6 +221,7 @@ export const SenseSettingsGroup = ({ config_endpoint }: ConfigEndpointProp) => {
         </div>
         <div className="col">
           <EndpointCheckbox
+            disabled={disabled}
             endpoint={config_endpoint}
             fullpath="sense/remote_sensing"
             label="Enable Remote Sensing"

@@ -1,5 +1,5 @@
 import { hasData } from "@/lib/types";
-import { useAdapterEndpoint, EndpointCheckbox, EndpointButton } from "@dssg/odin-react";
+import { useAdapterEndpoint, EndpointButton } from "@dssg/odin-react";
 import { SourceSettingsGroup } from "./settings/SourceSettingsGroup";
 import type { Buffer, Config } from "@/lib/ParamTreeType";
 import { SaveFileSettingsGroup } from "./settings/SaveFileSettingsGroup";
@@ -24,13 +24,13 @@ export const Keithley2470 = ({ name }: { name: string }) => {
           <div className="container-fluid p-3">
             <div className="row row-cols-1 gy-3">
               <div className="col">
-                <SourceSettingsGroup config_endpoint={config_endpoint} />
+                <SourceSettingsGroup disabled={acquiring} config_endpoint={config_endpoint} />
               </div>
               <div className="col">
-                <SenseSettingsGroup config_endpoint={config_endpoint} />
+                <SenseSettingsGroup disabled={acquiring} config_endpoint={config_endpoint} />
               </div>
               <div className="col">
-                <OutputSettingsGroup config_endpoint={config_endpoint} />
+                <OutputSettingsGroup disabled={acquiring} config_endpoint={config_endpoint} />
               </div>
             </div>
           </div>
@@ -56,7 +56,7 @@ export const Keithley2470 = ({ name }: { name: string }) => {
               <BufferGraph buffer_endpoint={buffers_endpoint} />
             </SettingsGroup>
           </div>
-          <SaveFileSettingsGroup config_endpoint={config_endpoint} />
+          <SaveFileSettingsGroup disabled={acquiring} config_endpoint={config_endpoint} />
         </div>
       </div>
     </div>
