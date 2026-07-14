@@ -23,7 +23,15 @@ class FileWriter:
                 "measurements",
                 shape=(0,),
                 maxshape=(None,),
-                dtype=ITEM_DTYPE,
+                dtype="f8",
+                # TODO: benchmark different compression algorithms
+                compression=hdf5plugin.Blosc(shuffle=hdf5plugin.Blosc.NOSHUFFLE),
+            )
+            f.create_dataset(
+                "timestamps",
+                shape=(0,),
+                maxshape=(None,),
+                dtype="i8",
                 # TODO: benchmark different compression algorithms
                 compression=hdf5plugin.Blosc(shuffle=hdf5plugin.Blosc.NOSHUFFLE),
             )
@@ -95,7 +103,19 @@ class FileWriter:
 
             old_len = ds.shape[0]
             ds.resize(old_len + len(chunk), axis=0)
-            ds[old_len:] = chunk
+            ds[old_len:] = chunk["reading"]
+
+            ds = f["timestamps"]
+            if not isinstance(ds, h5py.Dataset):
+                logger.error(
+                    "Could not access measurements dataset",
+                    path=self.state.savefile.path,
+                )
+                return
+
+            old_len = ds.shape[0]
+            ds.resize(old_len + len(chunk), axis=0)
+            ds[old_len:] = chunk["timestamp"]
 
     def read(self) -> None:
         with h5py.File(self.state.savefile.path(), "r") as f:
