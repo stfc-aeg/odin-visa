@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Concatenate, ParamSpec, Protocol, TypeVar
+from typing import Concatenate, ParamSpec, Protocol, TypeVar, cast
 
 import structlog
 
@@ -20,17 +20,16 @@ P = ParamSpec("P")
 
 
 def catch_error(
-    f: Callable[Concatenate[Self, P], Awaitable[R | None]],
-) -> Callable[Concatenate[Self, P], Awaitable[R | None]]:
+    f: Callable[Concatenate[Self, P], Awaitable[R]],
+) -> Callable[Concatenate[Self, P], Awaitable[R]]:
     @wraps(f)
-    async def wrapper(self: Self, *args: P.args, **kwargs: P.kwargs) -> R | None:
+    async def wrapper(self: Self, *args: P.args, **kwargs: P.kwargs) -> R:
         try:
             return await f(self, *args, **kwargs)
-        except DeviceMiscError as errors:
-            logger.error(
-                "Device returned errors, appending to event log.", errors=errors
-            )
-            for error in errors.messages:
+        except DeviceMiscError as e:
+            logger.error("Device returned errors, appending to event log.", errors=e)
+            for error in e.messages:
                 self.event_log.append(error)
+            raise e
 
     return wrapper

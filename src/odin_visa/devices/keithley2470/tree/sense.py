@@ -101,6 +101,8 @@ class SenseTree:
         await self.driver.set_remote_sensing(self.state.remote_sensing)
 
     async def refresh(self) -> None:
+        self.driver.invalidate_function_cache()
+
         self.state.function = await self.driver.get_function()
         self.state.count = await self.driver.get_count()
         self.state.averaging_count = await self.driver.get_averaging_count()

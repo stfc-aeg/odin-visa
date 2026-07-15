@@ -2,7 +2,7 @@ import structlog
 
 from odin_visa.devices.keithley2470.driver._catch_error import catch_error
 from odin_visa.devices.keithley2470.state import EventLogState
-from odin_visa.devices.keithley2470.transport import K2470Transport
+from odin_visa.devices.keithley2470.transport import DeviceMiscError, K2470Transport
 from odin_visa.devices.keithley2470.types import ProtectionLevel, SourceFunction
 from odin_visa.util.scpi_parse import parse_bool, parse_enum, parse_float
 
@@ -15,6 +15,9 @@ class SourceDriver:
     def __init__(self, transport: K2470Transport, event_log: EventLogState) -> None:
         self.transport = transport
         self.event_log = event_log
+        self.function_cache = None
+
+        self.tmp = 0
 
     @catch_error
     async def set_delay(self, delay: float) -> None:
@@ -107,11 +110,19 @@ class SourceDriver:
 
     @catch_error
     async def get_function(self) -> SourceFunction:
+        if self.function_cache is not None:
+            return self.function_cache
+
+        logger.debug("SourceFunction cache stale, refetching")
         response = await self.transport.query("SOUR:FUNC?")
         try:
-            return parse_enum(response, SourceFunction, match_start=True)
+            self.function_cache = parse_enum(response, SourceFunction, match_start=True)
         except ValueError as e:
             raise InvalidResponseError(response) from e
+        return self.function_cache
+
+    def invalidate_function_cache(self) -> None:
+        self.function_cache = None
 
     @catch_error
     async def set_protection_level(self, value: ProtectionLevel) -> None:

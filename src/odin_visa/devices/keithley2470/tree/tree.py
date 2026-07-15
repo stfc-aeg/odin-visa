@@ -1,3 +1,4 @@
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 import structlog
 from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
@@ -47,4 +48,7 @@ class K2470Tree:
         await self.config_tree.set_from_state()
 
     async def refresh(self) -> None:
-        await self.config_tree.refresh()
+        try:
+            await self.config_tree.refresh()
+        except DeviceMiscError:
+            return

@@ -78,6 +78,8 @@ class SourceTree:
         await self.driver.set_read_back(self.state.read_back)
 
     async def refresh(self) -> None:
+        self.driver.invalidate_function_cache()
+
         self.state.delay = await self.driver.get_delay()
         self.state.auto_delay = await self.driver.get_auto_delay()
         self.state.high_capacitance = await self.driver.get_high_capacitance()

@@ -17,6 +17,7 @@ class SenseDriver:
     def __init__(self, transport: K2470Transport, event_log: EventLogState) -> None:
         self.transport = transport
         self.event_log = event_log
+        self.function_cache = None
 
     @catch_error
     async def set_averaging_count(self, value: int) -> None:
@@ -242,10 +243,18 @@ class SenseDriver:
 
     @catch_error
     async def get_function(self) -> SenseFunction:
+        if self.function_cache is not None:
+            return self.function_cache
+
+        logger.debug("SenseFunction cache stale, refetching")
         response = await self.transport.query("SENS:FUNC?")
         response = response.strip('"')
         response = response.rstrip(":DC")
         try:
-            return parse_enum(response, SenseFunction, match_start=True)
+            self.function_cache = parse_enum(response, SenseFunction, match_start=True)
         except ValueError as e:
             raise InvalidResponseError(response) from e
+        return self.function_cache
+
+    def invalidate_function_cache(self) -> None:
+        self.function_cache = None

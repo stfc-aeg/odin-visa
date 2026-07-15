@@ -53,8 +53,6 @@ class BufferDriver:
     ) -> tuple[MeasurementNDArray, int] | None:
         size = await self.get_buffer_size(name)
         last_element_idx = await self.get_last_measurement_index(name)
-        if size is None or last_element_idx is None:
-            return None
         if last_element_idx == 0:
             logger.debug("buffer is empty")
             return None
