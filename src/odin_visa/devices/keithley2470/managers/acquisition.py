@@ -1,3 +1,4 @@
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 import numpy as np
 import pandas as pd
 import structlog
@@ -85,7 +86,10 @@ class Acquisition:
 
         size = self.config.device_buffer.size
         name = self.config.device_buffer.name
-        await self.driver.buffer.delete_buffer(name)
+        try:
+            await self.driver.buffer.delete_buffer(name)
+        except DeviceMiscError:
+            logger.warning("Could not delete buffer, as it does not exist")
         await self.driver.buffer.create_buffer(name, size)
 
         await self.driver.trigger_model.load_loop_until_trigger_model(

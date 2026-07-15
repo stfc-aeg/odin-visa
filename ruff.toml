@@ -28,6 +28,8 @@ ignore = [
     "TD002",  # Prevents authorless TODO comments, which is annoying
     "TD003",  # Prevents issueless TODO
     "FBT001", # Prevents boolean args
+    "TRY400", # Prevents using logger.error in except blocks
+    "PLR0911", # Prevnts >6 return statements
 ]
 
 [lint.extend-per-file-ignores]

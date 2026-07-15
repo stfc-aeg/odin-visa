@@ -4,6 +4,7 @@ from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.managers.acquisition import Acquisition
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.tree.event_log import EventLogTree
 
 from .buffer import BufferTree
 from .config import ConfigTree
@@ -23,6 +24,7 @@ class K2470Tree:
 
         self.config_tree = ConfigTree(state, driver, acquisition)
         self.buffer_tree = BufferTree(state, driver)
+        self.event_log_tree = EventLogTree(state)
 
         self.device_tree = AsyncParameterTree(
             {
@@ -37,6 +39,7 @@ class K2470Tree:
                 "config": self.config_tree.tree,
                 "buffer": self.buffer_tree.tree,
                 "device": self.device_tree,
+                "event_log": self.event_log_tree.tree,
             }
         )
 

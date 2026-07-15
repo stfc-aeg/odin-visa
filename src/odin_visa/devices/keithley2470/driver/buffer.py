@@ -2,13 +2,14 @@ import numpy as np
 import pandas as pd
 import structlog
 
+from odin_visa.devices.keithley2470.driver._catch_error import catch_error
 from odin_visa.devices.keithley2470.driver.error import (
-    InvalidBufferSizeError,
     InvalidResponseError,
 )
 from odin_visa.devices.keithley2470.driver.types import (
     MeasurementNDArray,
 )
+from odin_visa.devices.keithley2470.state import EventLogState
 from odin_visa.devices.keithley2470.transport import K2470Transport
 from odin_visa.util.scpi_parse import parse_int
 
@@ -16,9 +17,11 @@ logger = structlog.get_logger()
 
 
 class BufferDriver:
-    def __init__(self, transport: K2470Transport) -> None:
+    def __init__(self, transport: K2470Transport, event_log: EventLogState) -> None:
         self.transport = transport
+        self.event_log = event_log
 
+    @catch_error
     async def create_buffer(self, name: str, size: int) -> None:
         await self.transport.write(
             f':TRAC:MAKE "{name}", {size} ;'
@@ -28,6 +31,7 @@ class BufferDriver:
     async def delete_buffer(self, name: str) -> None:
         await self.transport.write(f':TRAC:DEL "{name}"')
 
+    @catch_error
     async def get_buffer_size(self, name: str) -> int:
         response = await self.transport.query(f':TRAC:POIN? "{name}"')
         try:
@@ -35,6 +39,7 @@ class BufferDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
+    @catch_error
     async def get_last_measurement_index(self, name: str) -> int:
         response = await self.transport.query(f':TRAC:ACT:END? "{name}"')
         try:
@@ -42,11 +47,14 @@ class BufferDriver:
         except ValueError as e:
             raise InvalidResponseError(response) from e
 
+    @catch_error
     async def read_measurements(
         self, name: str, start_index: int
     ) -> tuple[MeasurementNDArray, int] | None:
         size = await self.get_buffer_size(name)
         last_element_idx = await self.get_last_measurement_index(name)
+        if size is None or last_element_idx is None:
+            return None
         if last_element_idx == 0:
             logger.debug("buffer is empty")
             return None
@@ -92,32 +100,6 @@ class BufferDriver:
             ),
             dtype=np.float64,
         )
-        items[::2] *= 1_000_000
-        rows = items.reshape(-1, 2)
-        return pd.DataFrame(
-            {
-                "reading": rows[:, 1],
-            },
-            index=pd.to_timedelta(rows[:, 0], unit="us"),
-        ).rename_axis("timestamp")
-
-    async def _read_measurements_str(
-        self, name: str, start: int, end: int
-    ) -> MeasurementNDArray | None:
-        return self._parse_response_str(
-            await self.transport.query(
-                f':TRAC:DATA? {start}, {end}, "{name}", REL, READ'
-            )
-        )
-
-    def _parse_response_str(self, response: str) -> MeasurementNDArray | None:
-        items = np.fromstring(response, sep=",")
-
-        if items.size == 0:
-            return None
-        if items.size % 2 != 0:
-            raise InvalidBufferSizeError(items.size)
-
         items[::2] *= 1_000_000
         rows = items.reshape(-1, 2)
         return pd.DataFrame(

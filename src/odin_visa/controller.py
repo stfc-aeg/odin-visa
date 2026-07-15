@@ -102,7 +102,6 @@ class VisaController(AsyncBaseController):
             await self.param_tree.set(path, data)
         except DeviceError:
             logger.exception("Failed to set parameter", path=path, data=data)
-            return
 
         # TODO: Ideally, this should only refresh the device that was 'set'
         log_name = ""

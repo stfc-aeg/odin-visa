@@ -13,7 +13,7 @@ from odin_visa.devices.keithley2470.managers.acquisition import Acquisition
 
 from .driver import K2470Driver
 from .state import K2470State
-from .transport import K2470Transport
+from .transport import DeviceMiscError, K2470Transport
 from .tree import K2470Tree
 
 logger = structlog.get_logger()
@@ -38,17 +38,21 @@ class K2470Device(Device):
         )
         self.state.config.savefile.base_folder = self.config.savefile_config.data_folder
         self.transport = K2470Transport(device)
-        self.driver = K2470Driver(self.transport)
+        self.driver = K2470Driver(
+            transport=self.transport, event_log=self.state.event_log
+        )
 
         self.acquisition = Acquisition(
             state=self.state, driver=self.driver, config=self.config
         )
 
-        self.tree = K2470Tree(self.state, self.driver, self.acquisition)
+        self.tree = K2470Tree(
+            state=self.state, driver=self.driver, acquisition=self.acquisition
+        )
 
     async def initialise(self) -> None:
-        logger.info("Resetting K2470")
-        await self.driver.reset()
+        logger.info("Initialising communication with device")
+        await self.transport.initialise()
 
         logger.info("Setting K2470 default values")
         await self.tree.set_from_state()
@@ -56,7 +60,10 @@ class K2470Device(Device):
         logger.info("Creating device buffer")
         name = self.config.device_buffer.name
         size = self.config.device_buffer.size
-        await self.driver.buffer.delete_buffer(name)
+        try:
+            await self.driver.buffer.delete_buffer(name)
+        except DeviceMiscError:
+            logger.warning("Could not delete buffer, as it does not exist")
         await self.driver.buffer.create_buffer(name, size)
 
     @override

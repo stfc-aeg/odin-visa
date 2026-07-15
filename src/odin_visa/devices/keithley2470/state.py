@@ -109,6 +109,11 @@ class EventLogState:
     last_event: Event | None = None
     log: list[Event] = field(default_factory=list)
 
+    def append(self, event: Event) -> None:
+        self.log.append(event)
+        self.last_event = event
+        self.count += 1
+
 
 @dataclass
 class StatusState:

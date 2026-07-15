@@ -19,8 +19,7 @@ class Event(JSONSerializable):
     code: int
     message: str
     kind: EventType
-    timestamp_ms: int
-    context: str
+    datetime: str
 
 
 class SenseFunction(StrEnum):

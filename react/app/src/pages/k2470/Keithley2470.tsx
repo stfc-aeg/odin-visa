@@ -7,10 +7,12 @@ import { SenseSettingsGroup } from "./settings/SenseSettingsGroup";
 import { BufferGraph } from "./BufferGraph";
 import { SettingsGroup } from "./settings/SettingsGroup";
 import { OutputSettingsGroup } from "./settings/OutputSettingsGroup";
+import { useErrorLog } from "@/lib/useErrorLog";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
   const config_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 500);
   const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 500);
+  useErrorLog(name);
 
   if (!hasData(config_endpoint)) return <h1>Loading</h1>;
   if (!hasData(buffers_endpoint)) return <h1>Loading</h1>;

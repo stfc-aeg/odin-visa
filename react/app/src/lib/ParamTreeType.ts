@@ -10,6 +10,7 @@ export interface K2470 extends ParamNode {
   device: DeviceDetails,
   buffer: Buffer,
   config: Config,
+  event_log: EventLog
 }
 
 export interface DeviceDetails extends ParamNode {
@@ -28,15 +29,14 @@ export type Device = DeviceTypeMap[DeviceType];
 export interface EventLog extends ParamNode {
   count: number;
   last_event: Event;
-  log: Event[];
+  events: Event[];
 }
 
 export interface Event extends ParamNode {
   code: number;
   message: string;
   type: number;
-  timestamp_ms: number;
-  context: string;
+  datetime: number;
 }
 
 export interface Config extends ParamNode {
