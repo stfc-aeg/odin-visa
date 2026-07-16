@@ -1,13 +1,13 @@
 import type { ConfigEndpointProp } from "@/lib/types"
-import { SettingsGroup } from "./SettingsGroup"
+import { TitleCard } from "@/components/TitleCard";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 import { EndpointCheckbox, EndpointDropdown } from "@dssg/odin-react";
 import { SOURCE_MODES, TERMINALS } from "@/lib/ParamTreeType";
 import { clsx } from "clsx";
 
-export const OutputSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
+export const OutputSettingsCard = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   return (
-    <SettingsGroup disabled={disabled} title="Output Settings">
+    <TitleCard disabled={disabled} title="Output Settings">
       <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
           <EndpointCheckbox
@@ -71,6 +71,6 @@ export const OutputSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpoin
           </InputGroup>
         </div>
       </div>
-    </SettingsGroup >
+    </TitleCard >
   );
 }

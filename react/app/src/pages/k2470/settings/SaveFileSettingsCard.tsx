@@ -1,12 +1,12 @@
 import type { ConfigEndpointProp } from "@/lib/types";
-import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
+import { TitleCard } from "@/components/TitleCard";
 import { EndpointButton, EndpointCheckbox, EndpointInput } from "@dssg/odin-react";
 import { clsx } from "clsx";
 import { InputGroup } from "react-bootstrap";
 
-export const SaveFileSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
+export const SaveFileSettingsCard = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   return (
-    <SettingsGroup disabled={disabled} title="Save File Settings">
+    <TitleCard disabled={disabled} title="Save File Settings">
       <div className="row row-cols-1 gy-2">
         <div className="col">
           <EndpointCheckbox
@@ -63,6 +63,6 @@ export const SaveFileSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpo
           </InputGroup>
         </div>
       </div>
-    </SettingsGroup >
+    </TitleCard >
   );
 };

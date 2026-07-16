@@ -2,12 +2,12 @@ import { clsx } from "clsx";
 import type { PropsWithChildren } from "react";
 import { Card } from "react-bootstrap";
 
-export interface SettingsGroupProps extends PropsWithChildren {
+export interface TitleCardProps extends PropsWithChildren {
   disabled?: boolean;
   title?: string;
 };
 
-export const SettingsGroup = ({ disabled, title, children }: SettingsGroupProps) => {
+export const TitleCard = ({ disabled, title, children }: TitleCardProps) => {
   return (
     <Card className="p-0">
       <Card.Header

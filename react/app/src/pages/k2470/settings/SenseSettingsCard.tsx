@@ -1,11 +1,11 @@
 import { AVERAGING_MODES, SENSE_FUNCTIONS } from "@/lib/ParamTreeType";
 import type { ConfigEndpointProp } from "@/lib/types";
-import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
+import { TitleCard } from "@/components/TitleCard";
 import { EndpointButton, EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
 import { clsx } from "clsx";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 
-export const SenseSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
+export const SenseSettingsCard = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   const sense = config_endpoint.data.sense;
   const functionName = sense.function === "VOLTAGE" ? "Voltage" : "Current";
 
@@ -23,7 +23,7 @@ export const SenseSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpoint
   };
 
   return (
-    <SettingsGroup disabled={disabled} title="Sense Settings">
+    <TitleCard disabled={disabled} title="Sense Settings">
       <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
           <div className="row align-items-center gy-2">
@@ -228,6 +228,6 @@ export const SenseSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpoint
           />
         </div>
       </div>
-    </SettingsGroup >
+    </TitleCard >
   );
 };

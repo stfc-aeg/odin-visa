@@ -1,12 +1,13 @@
-import { DOWNSAMPLE_METHODS } from "@/lib/ParamTreeType";
+import { DOWNSAMPLE_METHODS, type BufferItem, type Buffer } from "@/lib/ParamTreeType";
+import type { WithRequired } from "@/lib/types";
 import { type AdapterEndpoint, OdinGraph, EndpointInput, EndpointDropdown } from "@dssg/odin-react";
 import type { Layout } from "plotly.js";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 
-const col = (arr, index) => arr.map((row) => row[index]);
+const col = (arr: BufferItem[], index: number) => arr.map((row) => row[index]);
 
-export const BufferGraph = ({ buffer_endpoint }: { buffer_endpoint: AdapterEndpoint }) => {
-  const data = buffer_endpoint?.data?.buffer;
+export const BufferGraph = ({ buffer_endpoint }: { buffer_endpoint: WithRequired<AdapterEndpoint<Buffer>, "data"> }) => {
+  const data = buffer_endpoint.data.buffer;
   const graph_data = [{
     x: col(data, 0),
     y: col(data, 1)

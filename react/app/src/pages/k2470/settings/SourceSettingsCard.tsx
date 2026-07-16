@@ -1,11 +1,11 @@
 import { PROTECTION_MODES, SOURCE_FUNCTIONS } from "@/lib/ParamTreeType";
 import type { ConfigEndpointProp } from "@/lib/types";
-import { SettingsGroup } from "@/pages/k2470/settings/SettingsGroup";
+import { TitleCard } from "@/components/TitleCard";
 import { EndpointCheckbox, EndpointDropdown, EndpointInput, EndpointRangeInput } from "@dssg/odin-react";
 import { clsx } from "clsx";
 import { DropdownItem, InputGroup } from "react-bootstrap";
 
-export const SourceSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
+export const SourceSettingsCard = ({ disabled, config_endpoint }: ConfigEndpointProp) => {
   const source = config_endpoint.data.source;
   const functionName = source.function === "VOLTAGE" ? "Voltage" : "Current";
   const inverseFunctionName = source.function === "VOLTAGE" ? "Current" : "Voltage";
@@ -24,7 +24,7 @@ export const SourceSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpoin
   };
 
   return (
-    <SettingsGroup disabled={disabled} title="Source Settings">
+    <TitleCard disabled={disabled} title="Source Settings">
       <div className="row row-cols-1 align-items-center gy-2">
         <div className="col">
           <div className="row align-items-center gx-2">
@@ -153,6 +153,6 @@ export const SourceSettingsGroup = ({ disabled, config_endpoint }: ConfigEndpoin
           </div>
         </div>
       </div>
-    </SettingsGroup>
+    </TitleCard>
   );
 };
