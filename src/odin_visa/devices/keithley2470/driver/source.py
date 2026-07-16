@@ -1,6 +1,7 @@
 import structlog
 
 from odin_visa.devices.keithley2470.driver._catch_error import catch_error
+from odin_visa.devices.keithley2470.driver._query import SCPIQuery
 from odin_visa.devices.keithley2470.state import EventLogState
 from odin_visa.devices.keithley2470.transport import DeviceMiscError, K2470Transport
 from odin_visa.devices.keithley2470.types import ProtectionLevel, SourceFunction
@@ -24,56 +25,32 @@ class SourceDriver:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:DELAY {delay}")
 
-    @catch_error
-    async def get_delay(self) -> float:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:DELAY?")
-        try:
-            return parse_float(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_delay(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:DELAY?", parser=parse_float)
 
     @catch_error
     async def set_auto_delay(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:DELAY:AUTO {value:d}")
 
-    @catch_error
-    async def get_auto_delay(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:DELAY:AUTO?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_auto_delay(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:DELAY:AUTO?", parser=parse_bool)
 
     @catch_error
     async def set_high_capacitance(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:HIGH:CAP {value:d}")
 
-    @catch_error
-    async def get_high_capacitance(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:HIGH:CAP?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_high_capacitance(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:HIGH:CAP?", parser=parse_bool)
 
     @catch_error
     async def set_level(self, level: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function} {level}")
 
-    @catch_error
-    async def get_level(self) -> float:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}?")
-        try:
-            return parse_float(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_level(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}?", parser=parse_float)
 
     @catch_error
     async def set_limit(self, limit: float) -> None:
@@ -82,27 +59,17 @@ class SourceDriver:
             f"SOUR:{function}:{self._limiting_function(function)}LIM {limit}"
         )
 
-    @catch_error
-    async def get_limit(self) -> float:
-        function = await self.get_function()
-        response = await self.transport.query(
-            f"SOUR:{function}:{self._limiting_function(function)}LIM?"
+    def get_limit(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(
+            query=f":SOUR:{function}:{self._limiting_function(function)}LIM?",
+            parser=parse_float,
         )
-        try:
-            return parse_float(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
 
-    @catch_error
-    async def get_limit_tripped(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(
-            f"SOUR:{function}:{self._limiting_function(function)}LIM:TRIP?"
+    def get_limit_tripped(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(
+            query=f":SOUR:{function}:{self._limiting_function(function)}LIM:TRIP?",
+            parser=parse_bool,
         )
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
 
     @catch_error
     async def set_function(self, function: SourceFunction) -> None:
@@ -129,65 +96,38 @@ class SourceDriver:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:PROT {value}")
 
-    @catch_error
-    async def get_protection_level(self) -> ProtectionLevel:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:PROT?")
-        try:
-            return parse_enum(response, ProtectionLevel)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_protection_level(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(
+            query=f":SOUR:{function}:PROT?",
+            parser=lambda response: parse_enum(response, ProtectionLevel),
+        )
 
-    @catch_error
-    async def get_protection_tripped(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:PROT:TRIP?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_protection_tripped(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:PROT:TRIP?", parser=parse_bool)
 
     @catch_error
     async def set_range(self, value: float) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:RANGE {value}")
 
-    @catch_error
-    async def get_range(self) -> float:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:RANGE?")
-        try:
-            return parse_float(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_range(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:RANGE?", parser=parse_float)
 
     @catch_error
     async def set_auto_range(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:RANGE:AUTO {value:d}")
 
-    @catch_error
-    async def get_auto_range(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:RANGE:AUTO?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_auto_range(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:RANGE:AUTO?", parser=parse_bool)
 
     @catch_error
     async def set_read_back(self, value: bool) -> None:
         function = await self.get_function()
         await self.transport.write(f"SOUR:{function}:READ:BACK {value:d}")
 
-    @catch_error
-    async def get_read_back(self) -> bool:
-        function = await self.get_function()
-        response = await self.transport.query(f"SOUR:{function}:READ:BACK?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_read_back(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(query=f":SOUR:{function}:READ:BACK?", parser=parse_bool)
 
     # TODO: sweeps?
 

@@ -3,7 +3,7 @@ import { useAdapterEndpoint, useError } from "@dssg/odin-react";
 import { useEffect, useRef } from "react";
 
 export const useErrorLog = (name: string): void => {
-  const endpoint = useAdapterEndpoint<EventLog>(`visa/devices/${name}/event_log`, import.meta.env.VITE_ENDPOINT_URL, 500);
+  const endpoint = useAdapterEndpoint<EventLog>(`visa/devices/${name}/event_log`, import.meta.env.VITE_ENDPOINT_URL, 100);
   const { setError } = useError();
   const previousEvents = useRef<{ name: string; count: number } | null>(null);
 

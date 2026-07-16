@@ -1,4 +1,5 @@
 from odin_visa.devices.keithley2470.driver._catch_error import catch_error
+from odin_visa.devices.keithley2470.driver._query import SCPIQuery
 from odin_visa.devices.keithley2470.driver.error import InvalidResponseError
 from odin_visa.devices.keithley2470.state import EventLogState, SMode, Terminal
 from odin_visa.devices.keithley2470.transport import K2470Transport
@@ -16,58 +17,38 @@ class OutputDriver:
         function = await self.get_function()
         await self.transport.write(f"OUTP:{function}:SMODE {value}")
 
-    @catch_error
-    async def get_smode(self) -> SMode:
-        function = await self.get_function()
-        response = await self.transport.query(f"OUTP:{function}:SMODE?")
-        try:
-            return parse_enum(response, SMode, match_start=True)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_smode(self, function: SourceFunction) -> SCPIQuery:
+        return SCPIQuery(
+            query=f":OUTP:{function}:SMODE?",
+            parser=lambda response: parse_enum(response, SMode, match_start=True),
+        )
 
     @catch_error
     async def set_interlock(self, value: bool) -> None:
         await self.transport.write(f"OUTP:INTERLOCK:STATE {int(value)}")
 
-    @catch_error
-    async def get_interlock(self) -> bool:
-        response = await self.transport.query("OUTP:INTERLOCK:STATE?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_interlock(self) -> SCPIQuery:
+        return SCPIQuery(query=":OUTP:INTERLOCK:STATE?", parser=parse_bool)
 
-    @catch_error
-    async def get_interlock_tripped(self) -> bool:
-        response = await self.transport.query("OUTP:INTERLOCK:TRIP?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_interlock_tripped(self) -> SCPIQuery:
+        return SCPIQuery(query=":OUTP:INTERLOCK:TRIP?", parser=parse_bool)
 
     @catch_error
     async def set_enabled(self, value: bool) -> None:
         await self.transport.write(f"OUTP {int(value)}")
 
-    @catch_error
-    async def get_enabled(self) -> bool:
-        response = await self.transport.query("OUTP?")
-        try:
-            return parse_bool(response)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_enabled(self) -> SCPIQuery:
+        return SCPIQuery(query=":OUTP?", parser=parse_bool)
 
     @catch_error
     async def set_terminals(self, value: Terminal) -> None:
         await self.transport.write(f"ROUT:TERM {value}")
 
-    @catch_error
-    async def get_terminals(self) -> Terminal:
-        response = await self.transport.query("ROUT:TERM?")
-        try:
-            return parse_enum(response, Terminal, match_start=True)
-        except ValueError as e:
-            raise InvalidResponseError(response) from e
+    def get_terminals(self) -> SCPIQuery:
+        return SCPIQuery(
+            query=":ROUT:TERM?",
+            parser=lambda response: parse_enum(response, Terminal, match_start=True),
+        )
 
     @catch_error
     async def get_function(self) -> SourceFunction:
