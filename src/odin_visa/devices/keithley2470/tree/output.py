@@ -1,9 +1,9 @@
-from odin_visa.devices.keithley2470.transport import DeviceMiscError
 import structlog
 from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 
 logger = structlog.get_logger()
 

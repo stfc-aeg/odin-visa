@@ -3,7 +3,6 @@ import hdf5plugin
 import structlog
 from numpy.typing import NDArray
 
-from odin_visa.devices.keithley2470.driver.types import ITEM_DTYPE
 from odin_visa.devices.keithley2470.state import K2470State
 
 logger = structlog.get_logger()
@@ -14,11 +13,13 @@ class FileWriter:
         self.state = state.config
 
     def create_file(self) -> None:
-        if self.state.savefile.path().is_file():
-            logger.warning("File already exists", path=self.state.savefile.path())
+        path = self.state.savefile.path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.is_file():
+            logger.warning("File already exists", path=path)
             return
 
-        with h5py.File(self.state.savefile.path(), "w") as f:
+        with h5py.File(path, "w") as f:
             f.create_dataset(
                 "measurements",
                 shape=(0,),
