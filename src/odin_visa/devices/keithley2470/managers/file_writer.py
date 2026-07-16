@@ -25,16 +25,18 @@ class FileWriter:
                 shape=(0,),
                 maxshape=(None,),
                 dtype="f8",
-                # TODO: benchmark different compression algorithms
-                compression=hdf5plugin.Blosc(shuffle=hdf5plugin.Blosc.NOSHUFFLE),
+                compression=hdf5plugin.Blosc2(
+                    filters=hdf5plugin.Blosc2.SHUFFLE, cname="zstd", clevel=3
+                ),
             )
             f.create_dataset(
                 "timestamps",
                 shape=(0,),
                 maxshape=(None,),
                 dtype="i8",
-                # TODO: benchmark different compression algorithms
-                compression=hdf5plugin.Blosc(shuffle=hdf5plugin.Blosc.NOSHUFFLE),
+                compression=hdf5plugin.Blosc2(
+                    filters=hdf5plugin.Blosc2.BITSHUFFLE, cname="zstd", clevel=3
+                ),
             )
         self.write_metadata()
 

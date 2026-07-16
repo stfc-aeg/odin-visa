@@ -1,4 +1,3 @@
-from odin_visa.devices.keithley2470.transport import DeviceMiscError
 import numpy as np
 import pandas as pd
 import structlog
@@ -8,6 +7,7 @@ from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.driver.types import ITEM_DTYPE
 from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 
 logger = structlog.get_logger()
 
