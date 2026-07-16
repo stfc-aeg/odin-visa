@@ -3,6 +3,7 @@ from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 
 logger = structlog.get_logger()
 
@@ -10,6 +11,7 @@ logger = structlog.get_logger()
 class SenseTree:
     def __init__(self, state: K2470State, driver: K2470Driver) -> None:
         self.state = state.config.sense
+        self.event_log = state.event_log
         self.driver = driver
         self.tree = AsyncParameterTree(
             {
@@ -108,38 +110,43 @@ class SenseTree:
         function = await self.driver.sense.get_function()
         self.state.function = function
 
-        (
-            self.state.count,
-            self.state.averaging_count,
-            self.state.averaging,
-            self.state.averaging_type,
-            self.state.auto_zero,
-            self.state.nplcs,
-            self.state.offset_compensation,
-            self.state.auto_range,
-            self.state.auto_range_lower_limit,
-            self.state.auto_range_rebound,
-            self.state.auto_range_upper_limit,
-            self.state.range,
-            self.state.relative_offset_level,
-            self.state.relative_offset,
-            self.state.remote_sensing,
-        ) = await self.driver.execute(
-            [
-                self.driver.sense.get_count(),
-                self.driver.sense.get_averaging_count(function),
-                self.driver.sense.get_averaging(function),
-                self.driver.sense.get_averaging_filter(function),
-                self.driver.sense.get_auto_zero(function),
-                self.driver.sense.get_nplcs(function),
-                self.driver.sense.get_offset_compensation(function),
-                self.driver.sense.get_auto_range(function),
-                self.driver.sense.get_auto_range_lower_limit(function),
-                self.driver.sense.get_auto_range_rebound(function),
-                self.driver.sense.get_auto_range_upper_limit(function),
-                self.driver.sense.get_range(function),
-                self.driver.sense.get_relative_offset_level(function),
-                self.driver.sense.get_relative_offset(function),
-                self.driver.sense.get_remote_sensing(function),
-            ]
-        )
+        try:
+            (
+                self.state.count,
+                self.state.averaging_count,
+                self.state.averaging,
+                self.state.averaging_type,
+                self.state.auto_zero,
+                self.state.nplcs,
+                self.state.offset_compensation,
+                self.state.auto_range,
+                self.state.auto_range_lower_limit,
+                self.state.auto_range_rebound,
+                self.state.auto_range_upper_limit,
+                self.state.range,
+                self.state.relative_offset_level,
+                self.state.relative_offset,
+                self.state.remote_sensing,
+            ) = await self.driver.execute(
+                [
+                    self.driver.sense.get_count(),
+                    self.driver.sense.get_averaging_count(function),
+                    self.driver.sense.get_averaging(function),
+                    self.driver.sense.get_averaging_filter(function),
+                    self.driver.sense.get_auto_zero(function),
+                    self.driver.sense.get_nplcs(function),
+                    self.driver.sense.get_offset_compensation(function),
+                    self.driver.sense.get_auto_range(function),
+                    self.driver.sense.get_auto_range_lower_limit(function),
+                    self.driver.sense.get_auto_range_rebound(function),
+                    self.driver.sense.get_auto_range_upper_limit(function),
+                    self.driver.sense.get_range(function),
+                    self.driver.sense.get_relative_offset_level(function),
+                    self.driver.sense.get_relative_offset(function),
+                    self.driver.sense.get_remote_sensing(function),
+                ]
+            )
+        except DeviceMiscError as e:
+            logger.error("Device returned errors, appending to event log.", errors=e)
+            for error in e.messages:
+                self.event_log.append(error)

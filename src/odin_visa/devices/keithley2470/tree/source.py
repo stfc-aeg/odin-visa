@@ -3,6 +3,7 @@ from odin_control.adapters.async_parameter_tree import AsyncParameterTree
 
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.state import K2470State
+from odin_visa.devices.keithley2470.transport import DeviceMiscError
 
 logger = structlog.get_logger()
 
@@ -10,6 +11,7 @@ logger = structlog.get_logger()
 class SourceTree:
     def __init__(self, state: K2470State, driver: K2470Driver) -> None:
         self.state = state.config.source
+        self.event_log = state.event_log
         self.driver = driver
         self.tree = AsyncParameterTree(
             {
@@ -80,30 +82,35 @@ class SourceTree:
         self.driver.source.invalidate_function_cache()
         function = await self.driver.source.get_function()
 
-        (
-            self.state.delay,
-            self.state.auto_delay,
-            self.state.high_capacitance,
-            self.state.level,
-            self.state.limit,
-            self.state.limit_tripped,
-            self.state.protection,
-            self.state.protection_tripped,
-            self.state.range,
-            self.state.auto_range,
-            self.state.read_back,
-        ) = await self.driver.execute(
-            [
-                self.driver.source.get_delay(function),
-                self.driver.source.get_auto_delay(function),
-                self.driver.source.get_high_capacitance(function),
-                self.driver.source.get_level(function),
-                self.driver.source.get_limit(function),
-                self.driver.source.get_limit_tripped(function),
-                self.driver.source.get_protection_level(function),
-                self.driver.source.get_protection_tripped(function),
-                self.driver.source.get_range(function),
-                self.driver.source.get_auto_range(function),
-                self.driver.source.get_read_back(function),
-            ]
-        )
+        try:
+            (
+                self.state.delay,
+                self.state.auto_delay,
+                self.state.high_capacitance,
+                self.state.level,
+                self.state.limit,
+                self.state.limit_tripped,
+                self.state.protection,
+                self.state.protection_tripped,
+                self.state.range,
+                self.state.auto_range,
+                self.state.read_back,
+            ) = await self.driver.execute(
+                [
+                    self.driver.source.get_delay(function),
+                    self.driver.source.get_auto_delay(function),
+                    self.driver.source.get_high_capacitance(function),
+                    self.driver.source.get_level(function),
+                    self.driver.source.get_limit(function),
+                    self.driver.source.get_limit_tripped(function),
+                    self.driver.source.get_protection_level(function),
+                    self.driver.source.get_protection_tripped(function),
+                    self.driver.source.get_range(function),
+                    self.driver.source.get_auto_range(function),
+                    self.driver.source.get_read_back(function),
+                ]
+            )
+        except DeviceMiscError as e:
+            logger.error("Device returned errors, appending to event log.", errors=e)
+            for error in e.messages:
+                self.event_log.append(error)

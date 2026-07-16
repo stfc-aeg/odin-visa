@@ -106,8 +106,8 @@ class K2470Transport:
             raise DeviceMiscError(errors)
 
     def _parse_error_message(self, msg: str) -> Event:
-        stripped = msg.strip().strip('"')
-        comma_split = stripped.split(",")
+        stripped = msg.strip().replace('"', "")
+        comma_split = stripped.split(",", 1)
         semicolon_split = comma_split[1].split(";")
         return Event(
             code=int(comma_split[0]),
