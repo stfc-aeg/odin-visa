@@ -9,8 +9,8 @@ import { useErrorLog } from "@/lib/useErrorLog";
 import { AcquisitionsCard } from "./acquisitions/AcquisitionsCard";
 
 export const Keithley2470 = ({ name }: { name: string }) => {
-  const config_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, 100);
-  const buffers_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, 100);
+  const config_endpoint = useAdapterEndpoint<Config>(`visa/devices/${name}/config`, import.meta.env.VITE_ENDPOINT_URL, Number(import.meta.env.VITE_CONFIG_POLL_TIME) || 1000);
+  const buffer_endpoint = useAdapterEndpoint<Buffer>(`visa/devices/${name}/buffer`, import.meta.env.VITE_ENDPOINT_URL, Number(import.meta.env.VITE_BUFFER_POLL_TIME) || 1000);
   useErrorLog(name);
 
   if (!hasData(config_endpoint)) return <h1>Loading</h1>;
