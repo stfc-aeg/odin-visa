@@ -3,14 +3,16 @@ import hdf5plugin
 import structlog
 from numpy.typing import NDArray
 
+from odin_visa.devices.device_config import CompressionConfig, DeviceConfig
 from odin_visa.devices.keithley2470.state import K2470State
 
 logger = structlog.get_logger()
 
 
 class FileWriter:
-    def __init__(self, state: K2470State) -> None:
+    def __init__(self, state: K2470State, config: DeviceConfig) -> None:
         self.state = state.config
+        self.config = config.savefile_config
 
     def create_file(self) -> None:
         path = self.state.savefile.path()
@@ -25,8 +27,8 @@ class FileWriter:
                 shape=(0,),
                 maxshape=(None,),
                 dtype="f8",
-                compression=hdf5plugin.Blosc2(
-                    filters=hdf5plugin.Blosc2.SHUFFLE, cname="zstd", clevel=3
+                compression=self._compression_from_config(
+                    self.config.measurements_compression
                 ),
             )
             f.create_dataset(
@@ -34,8 +36,8 @@ class FileWriter:
                 shape=(0,),
                 maxshape=(None,),
                 dtype="i8",
-                compression=hdf5plugin.Blosc2(
-                    filters=hdf5plugin.Blosc2.BITSHUFFLE, cname="zstd", clevel=3
+                compression=self._compression_from_config(
+                    self.config.timestamp_compression
                 ),
             )
         self.write_metadata()
@@ -129,3 +131,20 @@ class FileWriter:
                     path=self.state.savefile.path(),
                 )
                 return
+
+    def _compression_from_config(
+        self, config: CompressionConfig
+    ) -> h5py.filters.FilterRefBase | None:
+        match config.type:
+            case "none":
+                return None
+            case "gzip" | "lzf" | "szip":
+                return config.type
+            case "blosc2":
+                if config.settings is None:
+                    return None
+                return hdf5plugin.Blosc2(
+                    cname=config.settings.cname,
+                    clevel=config.settings.clevel,
+                    filters=config.settings.filter.tofilter(),
+                )

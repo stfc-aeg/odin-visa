@@ -20,7 +20,7 @@ class Acquisition:
         self.state = state
         self.config = config
 
-        self.file_writer = FileWriter(state)
+        self.file_writer = FileWriter(state, config)
 
         self.is_acquiring = False
         self.current_index = 1
