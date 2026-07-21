@@ -16,8 +16,9 @@ from pyvisa.resources import MessageBasedResource
 from typing_extensions import override
 
 from odin_visa.devices.device import Device, DeviceError
-from odin_visa.devices.device_config import DevicesConfig, DeviceType
+from odin_visa.devices.device_config import DeviceConfig, DevicesConfig, DeviceType
 from odin_visa.devices.keithley2470.device import K2470Device
+from odin_visa.devices.keithley2470.device_config import K2470DeviceConfig
 from odin_visa.log import configure_structlog
 
 if TYPE_CHECKING:
@@ -136,7 +137,8 @@ class VisaController(AsyncBaseController):
     async def initialise_devices(self) -> None:
         logger.info("Discovering and initialising devices")
         configured = 0
-        for device in self.devices_config.devices:
+        for device_data in self.devices_config.devices:
+            device = DeviceConfig.from_dict(device_data)
             logger.info("Attempting connection to device", address=device.address)
             address = device.address
             try:
@@ -169,16 +171,20 @@ class VisaController(AsyncBaseController):
 
             match device.type:
                 case DeviceType.K2470:
+                    device_config = K2470DeviceConfig.from_dict(device_data)
                     try:
                         device_obj = K2470Device(
-                            device=resource, ident=ident, address=address, config=device
+                            device=resource,
+                            ident=ident,
+                            address=address,
+                            config=device_config,
                         )
                         await device_obj.initialise()
                     except DeviceError:
                         logger.exception("Could not initialize `%s`", ident)
                         continue
                     logger.info("Initialised device", device=ident, address=address)
-                    self.devices[device.name] = device_obj
+                    self.devices[device_config.name] = device_obj
                     configured += 1
 
         logger.info("devices initialised", count=configured)

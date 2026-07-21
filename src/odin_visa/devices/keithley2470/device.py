@@ -8,7 +8,8 @@ from pyvisa.resources import MessageBasedResource
 from typing_extensions import override
 
 from odin_visa.devices.device import Device
-from odin_visa.devices.device_config import DeviceConfig, DeviceType
+from odin_visa.devices.device_config import DeviceType
+from odin_visa.devices.keithley2470.device_config import K2470DeviceConfig
 from odin_visa.devices.keithley2470.managers.acquisition import Acquisition
 
 from .driver import K2470Driver
@@ -24,7 +25,7 @@ class K2470Device(Device):
     def __init__(
         self,
         device: MessageBasedResource,
-        config: DeviceConfig,
+        config: K2470DeviceConfig,
         ident: str,
         address: str,
     ) -> None:

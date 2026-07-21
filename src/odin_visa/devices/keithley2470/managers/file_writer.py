@@ -3,14 +3,17 @@ import hdf5plugin
 import structlog
 from numpy.typing import NDArray
 
-from odin_visa.devices.device_config import CompressionConfig, DeviceConfig
+from odin_visa.devices.keithley2470.device_config import (
+    CompressionConfig,
+    K2470DeviceConfig,
+)
 from odin_visa.devices.keithley2470.state import K2470State
 
 logger = structlog.get_logger()
 
 
 class FileWriter:
-    def __init__(self, state: K2470State, config: DeviceConfig) -> None:
+    def __init__(self, state: K2470State, config: K2470DeviceConfig) -> None:
         self.state = state.config
         self.config = config.savefile_config
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import structlog
 
-from odin_visa.devices.device_config import DeviceConfig
+from odin_visa.devices.keithley2470.device_config import K2470DeviceConfig
 from odin_visa.devices.keithley2470.driver import K2470Driver
 from odin_visa.devices.keithley2470.driver.types import ITEM_DTYPE
 from odin_visa.devices.keithley2470.managers.file_writer import FileWriter
@@ -14,7 +14,7 @@ logger = structlog.get_logger()
 
 class Acquisition:
     def __init__(
-        self, state: K2470State, driver: K2470Driver, config: DeviceConfig
+        self, state: K2470State, driver: K2470Driver, config: K2470DeviceConfig
     ) -> None:
         self.driver = driver
         self.state = state
