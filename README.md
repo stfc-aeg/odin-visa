@@ -73,7 +73,7 @@ Add any devices to connect to, along with any configuration options for each dev
 
 The following configuration contains all the possible options to configure (and their default values). 
 
-```json
+```jsonc
 {
   "devices": [
     {
